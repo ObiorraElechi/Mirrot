@@ -1,36 +1,63 @@
 import { useEffect, useMemo, useState } from "react";
 import './App.css';
-import { EntropyCollector, mulberry32 } from "./userEntropy";
-import { drawCard, parseCard } from "./deck";
+import { EntropyCollectorChord, mulberry32 } from "./userEntropy";
+import { drawCard } from "./deck";
 
 function TarotCard({text}: {text: string}) {
   return <pre className="ascii">{text}</pre>;
 }
 
+const MIRROT_TITLE = String.raw`                                                
+     *****   **    **                                                   
+  ******  ***** *****    *                                        *     
+ **   *  *  ***** ***** ***                                      **     
+*    *  *   * **  * **   *                                       **     
+    *  *    *     *         ***  ****   ***  ****     ****     ******** 
+   ** **    *     *    ***   **** **** * **** **** * * ***  * ********  
+   ** **    *     *     ***   **   ****   **   **** *   ****     **     
+   ** **    *     *      **   **          **       **    **      **     
+   ** **    *     *      **   **          **       **    **      **     
+   ** **    *     **     **   **          **       **    **      **     
+   *  **    *     **     **   **          **       **    **      **     
+      *     *      **    **   **          **       **    **      **     
+  ****      *      **    **   ***         ***       ******       **     
+ *  *****           **   *** * ***         ***       ****         **    
+*     **                  ***                                           
+*                                                                       
+ **                                                                     
+ `
 export default function App() {
-  const collector = useMemo(() => new EntropyCollector(12), []);
-  const [presses, setPresses] = useState(0);
+  const collector = useMemo(() => new EntropyCollectorChord(), []);
+  const [heldCount, setHeldCount] = useState(0);
+  const [requiredCount, setRequiredCount] = useState(0);
+  const [chordStarted, setChordStarted] = useState(false);
   const [done, setDone] = useState(false);
+  const [chordMs, setChordMs] = useState<number | null>(null);
   const [cardsText, setCardsText] = useState<string[]>([]);
 
   useEffect(() => {
+    const updateFromCollector = () => {
+      const s = collector.getState();
+      setHeldCount(s.heldCount);
+      setRequiredCount(s.requiredCount);
+      setChordStarted(s.chordStarted);
+      setDone(s.done);
+      setChordMs(s.chordMs);
+      return s;
+    };
+
     const onDown = (e: KeyboardEvent) => {
       collector.onKeyDown(e);
-      const s = collector.getState();
-      setPresses(s.presses);
-      setDone(s.done);
+      updateFromCollector();
+
     };
 
     const onUp = (e: KeyboardEvent) => {
       collector.onKeyUp(e);
-      const s = collector.getState();
-      setPresses(s.presses);
-      setDone(s.done);
-
-      if (s.done) {
+      const s = updateFromCollector();
+      if (s.done && cardsText.length === 0) {
         const seed = collector.finalizeSeed();
         const rand = mulberry32(seed);
-
         const paths = drawCard(3, rand);
         Promise.all(paths.map(p => fetch(p).then(r => r.text()))).then(setCardsText);
       }
@@ -38,18 +65,30 @@ export default function App() {
 
     window.addEventListener("keydown", onDown);
     window.addEventListener("keyup", onUp);
+    
     return () => {
       window.removeEventListener("keydown", onDown);
       window.removeEventListener("keyup", onUp);
     };
-  }, [collector]);
+  }, [collector, cardsText.length]);
 
   return (
     <div>
-      <h1>Tarot Reader</h1>
+      <pre className="title-ascii">{MIRROT_TITLE}</pre>
+      <p>
+        To engage meaningfully with the cards drawn from the deck, press and hold the keys depicted in the diagram:
+        <br />
+      </p>
+      <img 
+        src="/ritual.png" 
+        className="png" 
+        alt="Tarot ritual key placement"
+        style={{ maxWidth: "100%", height: "auto"}}
+      />
 
       {!done && (
-        <p>Ritual: press and hold down on the allowed keys ({presses}/12)</p>
+        <p>Ritual Status:({heldCount}/{requiredCount})
+          {chordStarted ? " — timing…" : ""}</p>
       )}
 
       {cardsText.length > 0 && (

@@ -1,8 +1,17 @@
-:root {
-  font-family: system-ui, monospace, 'Courier New', Courier, monospace, system-ui, -apple-system;
+pre
+.ascii {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   white-space: pre;
-  line-height: 1;
-  font-size: 12;
+  line-height: .5;
+  font-size: 5;
+  overflow-x: auto;
+  font-variant-ligatures: none;
+}
+.title-ascii {
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  white-space: pre;
+  line-height: 0.5;
+  font-size: 5;
   overflow-x: auto;
   font-variant-ligatures: none;
 }
