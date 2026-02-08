@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import './App.css';
+import AsciiBackground from "./asciiBackground";
 import { EntropyCollectorChord, mulberry32 } from "./userEntropy";
 import { drawCard } from "./deck";
 
@@ -73,21 +74,32 @@ export default function App() {
   }, [collector, cardsText.length]);
 
   return (
-    <div>
+    <>
+     <AsciiBackground enabled={true} fps={12} frameCount={60} />
+
+    <div className="layer">
       <pre className="title-ascii">{MIRROT_TITLE}</pre>
+      <p><i>A mirror reflecting your soul</i></p>
       <p>
-        To engage meaningfully with the cards drawn from the deck, press and hold the keys depicted in the diagram:
+        Currently, there is only support for a "Past, Present, and Future" Tarot Readings.
+        <br />
+        To draw from the deck, press and hold the keys depicted in the diagram.
+        <br />
+        <br />
+        You will only recieve a reading once all fingers have been sensed. 
+        <br />
+        Focus...
         <br />
       </p>
       <img 
         src="/ritual.png" 
         className="png" 
         alt="Tarot ritual key placement"
-        style={{ maxWidth: "100%", height: "auto"}}
+        style={{ maxWidth: "50%", height: "auto"}}
       />
 
       {!done && (
-        <p>Ritual Status:({heldCount}/{requiredCount})
+        <p>Ritual Status: ({heldCount}/{requiredCount})
           {chordStarted ? " — timing…" : ""}</p>
       )}
 
@@ -99,6 +111,7 @@ export default function App() {
         </div>
       )}
     </div>
+    </>
   );
 }
 
