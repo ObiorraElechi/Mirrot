@@ -23,35 +23,35 @@ export function mulberry32(seed: number) {
     };
 }
 
-export type ChordState = {
+export type RitualState = {
     heldCount: number;
     requiredCount: number;
-    chordStarted: boolean;
+    ritualStarted: boolean;
     done: boolean;
-    chordMs: number | null;
+    ritualMs: number | null;
 }
 
-export class EntropyCollectorChord {
+export class EntropyCollectorRitual {
     private seed = 0;
     private done = false;
 
     private downAt = new Map<Key, number>();
-    private chordStartAt: number | null = null;
-    private chordMs: number | null = null;
+    private ritualStartAt: number | null = null;
+    private ritualMs: number | null = null;
     private lastEventAt = 0;
 
-    getState(): ChordState {
+    getState(): RitualState {
         return {
             heldCount: this.downAt.size,
             requiredCount: REQUIRED_KEYS.length,
-            chordStarted: this.chordStartAt !== null,
+            ritualStarted: this.ritualStartAt !== null,
             done: this.done,
-            chordMs: this.chordMs,
+            ritualMs: this.ritualMs,
         };
     }
 
     finalizeSeed(): number {
-        if (!this.done) throw new Error("Chord not complete");
+        if (!this.done) throw new Error("Ritual not complete");
         return this.seed | 0;
     }
 
@@ -62,11 +62,11 @@ export class EntropyCollectorChord {
         this.seed = mix32(this.seed, buf[1]);
     }
 
-    private checkChordInitialised(now: number) {
-        if (this.chordStartAt !== null) return;
+    private checkRitualInitialised(now: number) {
+        if (this.ritualStartAt !== null) return;
         if (this.downAt.size !== REQUIRED_KEYS.length) return;
 
-        this.chordStartAt = now;
+        this.ritualStartAt = now;
 
         this.seed = mix32(this.seed, (now * 1000) | 0);
     }
@@ -87,7 +87,7 @@ export class EntropyCollectorChord {
         this.seed = mix32(this.seed, k.charCodeAt(0));
         this.seed = mix32(this.seed, dt | 0);
         
-        this.checkChordInitialised(now);
+        this.checkRitualInitialised(now);
     };
 
     onKeyUp = (e: KeyboardEvent) => {
@@ -99,11 +99,11 @@ export class EntropyCollectorChord {
         const now = performance.now();
 
 
-        if (this.chordStartAt !== null) {
-            const chordMs = now - this.chordStartAt;
-            this.chordMs = chordMs;
+        if (this.ritualStartAt !== null) {
+            const ritualMs = now - this.ritualStartAt;
+            this.ritualMs = ritualMs;
 
-            this.seed = mix32(this.seed, chordMs | 0);
+            this.seed = mix32(this.seed, ritualMs | 0);
             this.seed = mix32(this.seed, (now * 1000) | 0);
             
             this.addCrypographicEntropy();

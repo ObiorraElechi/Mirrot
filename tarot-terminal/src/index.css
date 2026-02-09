@@ -29,3 +29,8 @@ pre
   padding: 48px 24px;
   gap: 18px;
 }
+
+.ritual-ui {
+  max-width: 80ch;
+  text-align: center;
+}

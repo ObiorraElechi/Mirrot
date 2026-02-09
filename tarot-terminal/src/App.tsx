@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import './App.css';
 import AsciiBackground from "./asciiBackground";
-import { EntropyCollectorChord, mulberry32 } from "./userEntropy";
-import { drawCard } from "./deck";
+import { EntropyCollectorRitual, mulberry32 } from "./userEntropy";
+import { drawCard, parseCard } from "./deck";
 
 function TarotCard({text}: {text: string}) {
   return <pre className="ascii">{text}</pre>;
 }
 
+const RITUAL_KEYS = new Set(["a", "s", "d", "f", " ", "j", "k", "l", ";"])
 const MIRROT_TITLE = String.raw`                                                
      *****   **    **                                                   
   ******  ***** *****    *                                        *     
@@ -27,40 +28,75 @@ const MIRROT_TITLE = String.raw`
 *                                                                       
  **                                                                     
  `
+
+ type Phase = | "ritual" | "shuffling" | "cardsDown" | "revealed";
+ type Label = "Past"| "Present" | "Future";
+
+ type DrawnCard = {
+  label: Label;
+  path: string;
+  text: string;
+  name: string;
+ };
+ 
 export default function App() {
-  const collector = useMemo(() => new EntropyCollectorChord(), []);
+  const collector = useMemo(() => new EntropyCollectorRitual(), []);
+  const [phase, setPhase] = useState<Phase>("ritual");
   const [heldCount, setHeldCount] = useState(0);
   const [requiredCount, setRequiredCount] = useState(0);
-  const [chordStarted, setChordStarted] = useState(false);
+  const [ritualStarted, setRitualStarted] = useState(false);
   const [done, setDone] = useState(false);
-  const [chordMs, setChordMs] = useState<number | null>(null);
-  const [cardsText, setCardsText] = useState<string[]>([]);
+  const [ritualMs, setRitualMs] = useState<number | null>(null);
+  const [drawn, setDrawn] = useState<DrawnCard[]>([]);
 
   useEffect(() => {
     const updateFromCollector = () => {
+      
       const s = collector.getState();
+
       setHeldCount(s.heldCount);
       setRequiredCount(s.requiredCount);
-      setChordStarted(s.chordStarted);
+      setRitualStarted(s.ritualStarted);
       setDone(s.done);
-      setChordMs(s.chordMs);
+      setRitualMs(s.ritualMs);
+      
+      
+      if (s.ritualStarted && phase === "ritual") {
+         setPhase("shuffling"); 
+      }
+      
       return s;
     };
 
     const onDown = (e: KeyboardEvent) => {
+      if (RITUAL_KEYS.has(e.key)) {
+        e.preventDefault();
+      }
+      
       collector.onKeyDown(e);
       updateFromCollector();
-
     };
 
     const onUp = (e: KeyboardEvent) => {
       collector.onKeyUp(e);
       const s = updateFromCollector();
-      if (s.done && cardsText.length === 0) {
+
+      if (s.done && phase === "shuffling" && drawn.length === 0) {
         const seed = collector.finalizeSeed();
         const rand = mulberry32(seed);
         const paths = drawCard(3, rand);
-        Promise.all(paths.map(p => fetch(p).then(r => r.text()))).then(setCardsText);
+        const labels: Label[] = ["Past", "Present", "Future"];
+        
+        Promise.all(
+          paths.map(async (p, i) => {
+            const meta = parseCard(p as any);
+            const text = await fetch(p).then(r => r.text());
+            return { label: labels[i], path: p, text, name: meta.name };
+          })
+        ).then(cards => {
+          setDrawn(cards);
+          setPhase("cardsDown");
+        });
       }
     };
 
@@ -71,47 +107,61 @@ export default function App() {
       window.removeEventListener("keydown", onDown);
       window.removeEventListener("keyup", onUp);
     };
-  }, [collector, cardsText.length]);
-
+  }, [collector, phase, drawn.length]);
+      
   return (
     <>
      <AsciiBackground enabled={true} fps={12} frameCount={60} />
 
     <div className="layer">
-      <pre className="title-ascii">{MIRROT_TITLE}</pre>
-      <p><i>A mirror reflecting your soul</i></p>
-      <p>
-        Currently, there is only support for a "Past, Present, and Future" Tarot Readings.
-        <br />
-        To draw from the deck, press and hold the keys depicted in the diagram.
-        <br />
-        <br />
-        You will only recieve a reading once all fingers have been sensed. 
-        <br />
-        Focus...
-        <br />
-      </p>
-      <img 
-        src="/ritual.png" 
-        className="png" 
-        alt="Tarot ritual key placement"
-        style={{ maxWidth: "50%", height: "auto"}}
-      />
+      
+      <div className="header">
+        <pre className="title-ascii">{MIRROT_TITLE}</pre>
+        <p><i>A mirror reflecting your soul</i></p>
+      </div>
+      
+      <div className="stage">
+        <div className={`fade ${phase === "ritual" ? "fade-in" : "fade-out"}`}>
+          <div className="ritual-ui">
+            <p>
+              Currently, there is only support for "Past, Present, and Future" Tarot Readings.
+              <br />
+              To draw from the deck, press and hold the keys depicted in the diagram.
+            </p>
 
-      {!done && (
-        <p>Ritual Status: ({heldCount}/{requiredCount})
-          {chordStarted ? " — timing…" : ""}</p>
-      )}
-
-      {cardsText.length > 0 && (
-        <div> 
-          {cardsText.map((t, i) => (
-            <TarotCard key={i} text={t} />
-          ))}
+            <img 
+              src="/ritual.png" 
+              className="png" 
+              alt="Tarot ritual key placement"
+              style={{ maxWidth: "100%", height: "auto"}}
+            />
+          
+            <p> 
+              <br />
+              You will only receive a reading once all fingers have been sensed. 
+              <br />
+            </p>
+          </div>
         </div>
-      )}
+        
+        <div className={`fade ${phase === "shuffling" ? "fade-in" : "fade-out"}`}>
+          <p>The deck begins to shuffle, release when you feel it right to do so...</p>
+        </div>
+
+        <div className={`fade ${phase === "cardsDown" ? "fade-in" : "fade-out"}`}>
+          <div style={{ display: "flex", gap: 32, marginTop: 24 }}>
+              {drawn.map(c => (
+                <div key={c.path} style={{ textAlign: "center" }}>
+                  <div style={{ opacity: 0.8, letterSpacing: "0.1em" }}>{c.label}</div>
+                  <pre className="ascii">{c.text}</pre>
+                  <div style={{ marginTop: 8, fontWeight: 600 }}>{c.name}</div>
+                </div>
+              ))}
+          </div>
+        </div>
+      </div>
+
     </div>
     </>
   );
 }
-

@@ -25,8 +25,58 @@ pre.stars-ascii {
 
   transform: scale(1.8);
   transform-origin: center;
+  overflow-x: auto;
+  overflow: none;
+
 
   pointer-events: none;
   user-select: none;
   z-index: 0;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.tagline {
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+/* stage region */
+.stage {
+  position: relative;
+  width: 100%;
+  min-height: 450px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* important */
+}
+
+/* overlay layers */
+.stage > .fade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 20px;
+}
+
+.fade {
+  transition: opacity 900ms ease, transform 900ms ease;
+  will-change: opacity, transform;
+}
+.fade-in {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 800ms ease, transform 800ms ease;
+}
+
+.fade-out {
+  opacity: 0;
+  transform: scale(0.98);
+  pointer-events: none;
 }
