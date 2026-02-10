@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import './App.css';
 import AsciiBackground from "./asciiBackground";
+import DeckShuffle from "./DeckShuffle";
 import { EntropyCollectorRitual, mulberry32 } from "./userEntropy";
 import { drawCard, parseCard } from "./deck";
 
@@ -72,7 +73,7 @@ export default function App() {
       if (RITUAL_KEYS.has(e.key)) {
         e.preventDefault();
       }
-      
+
       collector.onKeyDown(e);
       updateFromCollector();
     };
@@ -100,8 +101,8 @@ export default function App() {
       }
     };
 
-    window.addEventListener("keydown", onDown);
-    window.addEventListener("keyup", onUp);
+    window.addEventListener("keydown", onDown, { passive: false});
+    window.addEventListener("keyup", onUp, { passive: false});
     
     return () => {
       window.removeEventListener("keydown", onDown);
@@ -117,7 +118,7 @@ export default function App() {
       
       <div className="header">
         <pre className="title-ascii">{MIRROT_TITLE}</pre>
-        <p><i>A mirror reflecting your soul</i></p>
+        <p><i>A mirror's reflection of your soul</i></p>
       </div>
       
       <div className="stage">
@@ -145,7 +146,10 @@ export default function App() {
         </div>
         
         <div className={`fade ${phase === "shuffling" ? "fade-in" : "fade-out"}`}>
-          <p>The deck begins to shuffle, release when you feel it right to do so...</p>
+          <div className="shuffle-wrap">
+            <DeckShuffle enabled={phase ==="shuffling"} count={9} speed={250} />
+            <p>The deck begins to shuffle, release when you feel it right to do so...</p>
+          </div>
         </div>
 
         <div className={`fade ${phase === "cardsDown" ? "fade-in" : "fade-out"}`}>

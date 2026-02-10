@@ -34,3 +34,10 @@ pre
   max-width: 80ch;
   text-align: center;
 }
+
+.shuffle-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+}
