@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import './App.css';
 import AsciiBackground from "./asciiBackground";
 import DeckShuffle from "./DeckShuffle";
 import { EntropyCollectorRitual, mulberry32 } from "./userEntropy";
 import { drawCard, parseCard } from "./deck";
+import { TiltWrap } from "./TiltWrap"
 
 function FlipCard({
   back,
@@ -43,10 +44,6 @@ function FlipCard({
   );
 }
 
-
-function TarotCard({text}: {text: string}) {
-  return <pre className="ascii">{text}</pre>;
-}
 const REQUIRED_KEYS = ["a", "s", "d", "f", " ", "j", "k", "l", ";"];
 const RITUAL_KEYS = new Set<string>(REQUIRED_KEYS);
 
@@ -99,7 +96,6 @@ export default function App() {
   const [flipLock, setFlipLock] = useState(false); // allow only one flip at a time
 
    useEffect(() => {
-    // adjust paths to wherever you store your ASCII assets (public folder is easiest)
     fetch("/Tarot-Ascii/cardBack.txt").then(r => r.text()).then(setCardBack).catch(() => {
       setCardBack("/Tarot-Ascii/cardBack.txt");
     });
@@ -223,43 +219,47 @@ export default function App() {
         </div>
 
         <div className={`fade ${phase === "cardsDown" ? "fade-in" : "fade-out"}`}>
-            <div style={{ display: "flex", gap: 32, marginTop: 24 }}>
-              {drawn.map((c) => {
-                const disabled = flipLock || !canFlipMore;
+          <div className="dealRow">
+            {drawn.map((c, i) => {
+              const disabled = flipLock || !canFlipMore;
 
-                return (
-                  <div key={c.path} style={{ textAlign: "center" }}>
-                    <div style={{ opacity: 0.8, letterSpacing: "0.1em" }}>{c.label}</div>
 
-                    <FlipCard
-                      back={cardBack}
-                      face={c.text}
-                      reversed={c.reversed}
-                      disabled={disabled}
-                      onRevealed={() => {
-                        setFlipLock(true);
-                        window.setTimeout(() => setFlipLock(false), 600);
+              return (
+                <div key={c.path} style={{ textAlign: "center" }}>
+                  <div style={{ opacity: 0.8, letterSpacing: "0.1em" }}>{c.label}</div>
 
-                        setRevealedCount((n) => n + 1);
+                  <TiltWrap i={i} enabled={phase === "cardsDown"}>
+                  <FlipCard
+                    back={cardBack}
+                    face={c.text}
+                    reversed={c.reversed}
+                    disabled={disabled}
+                    onRevealed={() => {
+                          setFlipLock(true);
+                          window.setTimeout(() => setFlipLock(false), 600);
 
-                        setDrawn((prev) =>
-                          prev.map((card) =>
-                            card.path === c.path ? { ...card, revealed: true } : card
-                          )
-                        );
-                      }}
-                    />
+                          setRevealedCount(n => n + 1);
 
-                    <div style={{ marginTop: 8, fontWeight: 600 }}>
-                      {c.revealed ? `${c.name}${c.reversed ? " (reversed)" : ""}` : "\u00A0"}
-                    </div>
+                          setDrawn(prev =>
+                            prev.map(card =>
+                              card.path === c.path ? { ...card, revealed: true } : card
+                            )
+                          );
+                    }}
+                  />
+                  </TiltWrap>
+
+
+                  <div style={{ marginTop: 8, fontWeight: 600 }}>
+                    {c.revealed ? `${c.name}${c.reversed ? " (reversed)" : ""}` : "\u00A0"}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+          })}
           </div>
         </div>
       </div>
+    </div>
     </>
   );
 }
