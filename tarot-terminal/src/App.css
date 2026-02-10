@@ -80,3 +80,50 @@ pre.stars-ascii {
   transform: scale(0.98);
   pointer-events: none;
 }
+
+.flipCard {
+  display: inline-block;
+  cursor: pointer;
+  perspective: 1400px;
+}
+
+.flipInner {
+  display: grid;
+  transform-style: preserve-3d;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.flipCard.isFlipped .flipInner {
+  transform: rotateY(180deg);
+}
+
+.flipSide {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* back face */
+.flipBack {
+  transform: translateZ(1px);
+}
+
+/* front face: keep the 3D setup here ALWAYS */
+.flipFront {
+  --rev-rot: 0deg; /* default: upright */
+  transform: rotateY(180deg) translateZ(1px) rotate(var(--rev-rot));
+}
+
+/* reversed just tweaks the variable, doesn't override transform */
+.flipFront.rev {
+  --rev-rot: 180deg;
+}
+
+.ascii {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  white-space: pre;
+  line-height: 1;
+  font-variant-ligatures: none;
+  font-size: 12px; /* must include units */
+}
