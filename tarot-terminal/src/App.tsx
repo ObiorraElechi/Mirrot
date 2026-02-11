@@ -4,24 +4,14 @@ import AsciiBackground from "./asciiBackground";
 import DeckShuffle from "./DeckShuffle";
 import { EntropyCollectorRitual, mulberry32 } from "./userEntropy";
 import { drawCard, parseCard } from "./deck";
+import type { CardPath } from "./deck";
+import { MEANINGS_BY_PATH } from "./tarotMeanings";
 import { TiltWrap } from "./TiltWrap"
 
-function FlipCard({
-  back,
-  face,
-  reversed,
-  disabled,
-  onRevealed,
-}: {
-  back: string;
-  face: string;
-  reversed: boolean;
-  disabled?: boolean;
-  onRevealed?: () => void;
-}) {
+function FlipCard({ back, face, reversed, disabled, onRevealed, }: { back: string; face: string; reversed: boolean; disabled?: boolean; onRevealed?: () => void;}) {
   const [flipped, setFlipped] = useState(false);
 
-  const flip = () => {
+  const flipNow = () => {
     if (disabled) return;
     if (flipped) return;
     setFlipped(true);
@@ -31,7 +21,17 @@ function FlipCard({
   return (
     <div
       className={`flipCard ${flipped ? "isFlipped" : ""} ${disabled ? "disabled" : ""}`}
-      onClick={flip}
+      onPointerDown={(e) => {
+        if (disabled || flipped) return;
+
+        // keep the pointer “locked” to this element even if it moves
+        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+
+        // prevent text selection / weird default behaviors
+        e.preventDefault();
+
+        flipNow();
+      }}
       role="button"
       aria-disabled={disabled}
       tabIndex={0}
@@ -40,6 +40,28 @@ function FlipCard({
         <pre className="ascii flipSide flipBack">{back}</pre>
         <pre className={`ascii flipSide flipFront ${reversed ? "rev" : ""}`}>{face}</pre>
       </div>
+    </div>
+  );
+}
+
+function MeaningWindow({ card }: { card: DrawnCard }) {
+  const meaning = MEANINGS_BY_PATH[card.path];
+  const line = card.reversed ? meaning.reversed : meaning.upright;
+
+  const meta = parseCard(card.path);
+  const suitClass =
+    meta.suit === "MajorArcana" ? "suit-major" :
+    meta.suit === "Cups"       ? "suit-cups" :
+    meta.suit === "Pentacles"  ? "suit-pentacles" :
+    meta.suit === "Swords"     ? "suit-swords" :
+    meta.suit === "Wands"      ? "suit-wands" : "";
+
+  return (
+    <div className="meaningWindow">
+      <div className={`meaningTitle ${suitClass}`}>
+        {card.name}{card.reversed ? " (reversed)" : ""}
+      </div>
+      <div className="line">{line}</div>
     </div>
   );
 }
@@ -72,7 +94,7 @@ const MIRROT_TITLE = String.raw`
 
  type DrawnCard = {
   label: Label;
-  path: string;
+  path: CardPath;
   text: string;
   name: string;
   reversed: boolean;
@@ -148,7 +170,7 @@ export default function App() {
 
         Promise.all(
           paths.map(async (p, i) => {
-            const meta = parseCard(p as any);
+            const meta = parseCard(p);
             const text = await fetch(p).then(r => r.text());
 
             const reversed = rand() < 0.35;
@@ -223,39 +245,34 @@ export default function App() {
             {drawn.map((c, i) => {
               const disabled = flipLock || !canFlipMore;
 
-
               return (
-                <div key={c.path} style={{ textAlign: "center" }}>
+                <div key={c.path} className="cardColumn" style={{ textAlign: "center" }}>
                   <div style={{ opacity: 0.8, letterSpacing: "0.1em" }}>{c.label}</div>
 
                   <TiltWrap i={i} enabled={phase === "cardsDown"}>
-                  <FlipCard
-                    back={cardBack}
-                    face={c.text}
-                    reversed={c.reversed}
-                    disabled={disabled}
-                    onRevealed={() => {
-                          setFlipLock(true);
-                          window.setTimeout(() => setFlipLock(false), 600);
+                    <FlipCard
+                      back={cardBack}
+                      face={c.text}
+                      reversed={c.reversed}
+                      disabled={disabled}
+                      onRevealed={() => {
+                        setFlipLock(true);
+                        window.setTimeout(() => setFlipLock(false), 600);
+                        setRevealedCount((n) => n + 1);
 
-                          setRevealedCount(n => n + 1);
-
-                          setDrawn(prev =>
-                            prev.map(card =>
-                              card.path === c.path ? { ...card, revealed: true } : card
-                            )
-                          );
-                    }}
-                  />
+                        setDrawn((prev) =>
+                          prev.map((card) =>
+                            card.path === c.path ? { ...card, revealed: true } : card
+                          )
+                        );
+                      }}
+                    />
                   </TiltWrap>
 
-
-                  <div style={{ marginTop: 8, fontWeight: 600 }}>
-                    {c.revealed ? `${c.name}${c.reversed ? " (reversed)" : ""}` : "\u00A0"}
-                  </div>
+                  {c.revealed && <MeaningWindow card={c} />}
                 </div>
               );
-          })}
+            })}
           </div>
         </div>
       </div>

@@ -2,8 +2,8 @@ pre
 .ascii {
   font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   white-space: pre;
-  line-height: .5;
-  font-size: 5;
+  line-height: 1;
+  font-size: 9;
   overflow-x: auto;
   font-variant-ligatures: none;
 }

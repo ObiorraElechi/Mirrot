@@ -44,17 +44,15 @@ pre.stars-ascii {
   margin-top: 8px;
 }
 
-/* stage region */
 .stage {
   position: relative;
   width: 100%;
   min-height: 450px;
   display: flex;
   justify-content: center;
-  align-items: flex-start; /* important */
+  align-items: flex-start;
 }
 
-/* overlay layers */
 .stage > .fade {
   position: absolute;
   inset: 0;
@@ -62,7 +60,7 @@ pre.stars-ascii {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 20px;
+  padding-top: 0px;
 }
 
 .fade {
@@ -82,8 +80,9 @@ pre.stars-ascii {
 }
 
 .flipCard {
-  display: inline-block;
-  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
 }
 
 .flipInner {
@@ -101,20 +100,21 @@ pre.stars-ascii {
   grid-area: 1 / 1;
   backface-visibility: hidden;
   transform-style: preserve-3d;
+  pointer-events: none;
 }
 
 /* back face */
 .flipBack {
   transform: translateZ(1px);
+  pointer-events: none;
 }
 
-/* front face: keep the 3D setup here ALWAYS */
 .flipFront {
-  --rev-rot: 0deg; /* default: upright */
+  --rev-rot: 0deg;
   transform: rotateY(180deg) translateZ(1px) rotate(var(--rev-rot));
+  pointer-events: none;
 }
 
-/* reversed just tweaks the variable, doesn't override transform */
 .flipFront.rev {
   --rev-rot: 180deg;
 }
@@ -124,13 +124,13 @@ pre.stars-ascii {
   white-space: pre;
   line-height: 1;
   font-variant-ligatures: none;
-  font-size: 12px; /* must include units */
+  font-size: 8px;
 }
 
 .dealRow {
   display: flex;
   gap: 32px;
-  margin-top: 24px;
+  margin-top: 0px;
 }
 
 .dealCard {
@@ -174,14 +174,74 @@ pre.stars-ascii {
 .tiltOuter {
   perspective: 1400px;
   display: inline-block;
+  position: relative; 
+  z-index: 0;
 }
 
 
 .cardHover {
   transform-style: preserve-3d;
   transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: transform;
+  will-change: transform;;
 }
 @media (hover: hover) and (pointer: fine) {
-  .tiltOuter:hover .cardHover { transform: translateZ(40px) scale(1.01); }
+  .tiltOuter:hover .cardHover {
+    transform: scale(1.01); 
+    filter: drop-shadow(0 10px 18px rgba(0,0,0,0.55))  drop-shadow(0 0 14px rgba(255,255,255,0.10));
+  }
+}
+
+.cardColumn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 0;
+}
+
+.meaningWindow {
+  margin-top: 10px;
+  width: 380px;
+  padding: 10px 12px;
+  background: rgba(9, 9, 9, 0.297);
+  backdrop-filter: blur(6px);
+  border-radius: 5px;
+  transform: translateY(-6px);
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.meaningTitle { --suit: rgba(255,255,255,0.35); }
+
+.suit-major      { --suit: #976b00; }
+.suit-cups       { --suit: #6a0000; }
+.suit-pentacles  { --suit: #053e13; }
+.suit-swords     { --suit: #33677a; }
+.suit-wands      { --suit: #5a0099; }
+
+
+.meaningTitle {
+  display: inline-block;
+  padding: 4px 12px;
+  margin-bottom: 6px;
+
+  font-size: 0.9rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+ color: #fff;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--suit) 100%, rgba(0,0,0,0.35));
+
+  /* backdrop-filter: blur(4px); */
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cardColumn:hover .meaningWindow {
+    opacity: 1;
+    transform: translateY(0);
+    z-index: 50;
+  }
 }
