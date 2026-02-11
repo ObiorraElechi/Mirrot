@@ -33,6 +33,13 @@ pre
 .ritual-ui {
   max-width: 80ch;
   text-align: center;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 100px;              /* ← THIS fixes the collision */
+  margin-top: 10px;      /* ← Pushes ritual below title */
 }
 
 .shuffle-wrap{

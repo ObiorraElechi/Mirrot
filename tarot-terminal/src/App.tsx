@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import './App.css';
 import AsciiBackground from "./asciiBackground";
 import DeckShuffle from "./DeckShuffle";
@@ -100,31 +100,105 @@ const MIRROT_TITLE = String.raw`
   reversed: boolean;
   revealed: boolean;
  };
- 
+
 export default function App() {
+  type RitualMode = "click" | "keys";
+  const [ritualMode, setRitualMode] = useState<RitualMode>(() => {
+    const saved = localStorage.getItem("mirrot:ritualMode");
+    return saved === "keys" ? "keys" : "click";
+  });
+  
   const collector = useMemo(() => new EntropyCollectorRitual(), []);
   const [phase, setPhase] = useState<Phase>("ritual");
 
   const [drawn, setDrawn] = useState<DrawnCard[]>([]);
   const [cardBack, setCardBack] = useState<string>("LOADING BACK...");
 
-  // NEW: reveal rules
   const [revealedCount, setRevealedCount] = useState(0);
   const [flipLock, setFlipLock] = useState(false); // allow only one flip at a time
+  
+  const SHUFFLE_AFTER_RELEASE_MS = 0;
+  const [pressing, setPressing] = useState(false);
+  const pressStartRef = useRef<number | null>(null);
+  const clickSeedRef = useRef<number | null>(null);
+  const dealTimerRef = useRef<number | null>(null);
 
-   useEffect(() => {
+  useEffect(() => {
+  return () => {
+    if (dealTimerRef.current) window.clearTimeout(dealTimerRef.current);
+  };
+  }, []);
+
+  const beginClickRitual = () => {
+    if (phase !== "ritual") return;
+    if (ritualMode !== "click") return;
+
+    setPressing(true);                 // <- DeckShuffle enabled immediately
+    pressStartRef.current = performance.now();
+  };
+
+  const endClickRitual = () => {
+    if (phase !== "ritual") return;
+    if (ritualMode !== "click") return;
+    if (!pressing) return;
+
+    setPressing(false);
+
+    const start = pressStartRef.current ?? performance.now();
+    const holdMs = performance.now() - start;
+    clickSeedRef.current = ((Math.floor(holdMs * 1000) ^ Date.now()) >>> 0);
+
+    // <- NEXT PHASE ONLY AFTER RELEASE
+    setPhase("shuffling");
+
+    if (dealTimerRef.current) window.clearTimeout(dealTimerRef.current);
+    dealTimerRef.current = window.setTimeout(() => {
+      const seed = clickSeedRef.current ?? Date.now();
+      const rand = mulberry32(seed);
+
+      const paths = drawCard(3, rand);
+      const labels: Label[] = ["Past", "Present", "Future"];
+
+      Promise.all(paths.map(async (p, i) => {
+        const meta = parseCard(p);
+        const text = await fetch(p).then(r => r.text());
+        const reversed = rand() < 0.35;
+        const displayName = meta.suit === "MajorArcana" ? meta.name : `${meta.name} of ${meta.suit}`;
+        return { label: labels[i], path: p, text, name: displayName, reversed, revealed: false };
+      })).then(cards => {
+        setDrawn(cards);
+        setRevealedCount(0);
+        setFlipLock(false);
+        setPhase("cardsDown");
+      });
+    }, SHUFFLE_AFTER_RELEASE_MS);
+  };
+
+  const cancelClickRitual = () => {
+    setPressing(false);
+    if (dealTimerRef.current) window.clearTimeout(dealTimerRef.current);
+  };
+
+
+
+  useEffect(() => {
+    localStorage.setItem("mirrot:ritualMode", ritualMode);
+  }, [ritualMode]);
+
+  useEffect(() => {
     fetch("./Tarot-Ascii/cardBack.txt").then(r => r.text()).then(setCardBack).catch(() => {
-      setCardBack("/Tarot-Ascii/cardBack.txt");
+      setCardBack("./Tarot-Ascii/cardBack.txt");
     });
   }, []);
 
   useEffect(() => {
+    if (ritualMode !== "keys") return;
     const updateFromCollector = () => {
       const s = collector.getState();
       if (s.ritualStarted && phase === "ritual") setPhase("shuffling");
       return s;
     };
-
+    
     const onDown = (e: KeyboardEvent) => {
       // don’t hijack typing in inputs/textareas
       const el = e.target as HTMLElement | null;
@@ -145,6 +219,7 @@ export default function App() {
       updateFromCollector();
     };
 
+    
     const onUp = (e: KeyboardEvent) => {
       collector.onKeyUp(e);
       const s = updateFromCollector();
@@ -173,7 +248,7 @@ export default function App() {
         });
       }
     };
-
+    
     window.addEventListener("keydown", onDown, { passive: false });
     window.addEventListener("keyup", onUp, { passive: false });
 
@@ -181,7 +256,7 @@ export default function App() {
       window.removeEventListener("keydown", onDown);
       window.removeEventListener("keyup", onUp);
     };
-  }, [collector, phase, drawn.length]);
+  }, [collector, phase, drawn.length, ritualMode]);
 
   const canFlipMore = revealedCount < 3; // “max 3 flips” rule (here it’s literally 3 cards)
 
@@ -191,41 +266,72 @@ export default function App() {
 
       <div className="layer">
       
+        <div className="modeToggle">
+        <button onClick={() => setRitualMode("click")} disabled={phase !== "ritual"}>
+          Click/Touch
+        </button>
+        <button onClick={() => setRitualMode("keys")} disabled={phase !== "ritual"}>
+          Keyboard
+        </button>
+      </div>
+      
       <div className="header">
         <pre className="title-ascii">{MIRROT_TITLE}</pre>
         <p><i>A mirror's reflection of your soul</i></p>
       </div>
       
       <div className="stage">
-        <div className={`fade ${phase === "ritual" ? "fade-in" : "fade-out"}`}>
-          <div className="ritual-ui">
-            <p>
-              Currently, there is only support for "Past, Present, and Future" Tarot Readings.
-              <br />
-              To draw from the deck, press and hold the keys depicted in the diagram.
-            </p>
+       <div className={`fade ${phase === "ritual" ? "fade-in" : "fade-out"}`}>
+        <div className="ritual-ui">
+          {ritualMode === "click" ? (
+              <>
+                <p>Press and hold the deck. Release when it feels right.</p>
 
-            <img 
-              src="/ritual.png" 
-              className="png" 
-              alt="Tarot ritual key placement"
-              style={{ maxWidth: "100%", height: "auto"}}
-            />
-          
-            <p> 
-              <br />
-              You will only receive a reading once all fingers have been sensed. 
-              <br />
-            </p>
+                <div
+                  style={{ display: "inline-block", cursor: "pointer", userSelect: "none" }}
+                  onPointerDown={(e) => {
+                    e.preventDefault();
+                    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+                    beginClickRitual();
+                  }}
+                  onPointerUp={(e) => { e.preventDefault(); endClickRitual(); }}
+                  onPointerCancel={cancelClickRitual}
+                >
+                  <DeckShuffle enabled={pressing} count={9} speed={250} />
+                </div>
+
+                <p style={{ opacity: 100, fontSize: "1rem" }}>
+                  {pressing ? "The deck begins to shuffle, release when you feel it right to do so..." : "Press the deck to begin your reading"}
+                </p>
+              </>
+            ) : (
+              <>
+                <p>
+                  To draw from the deck, press and hold the keys depicted in the diagram.
+                </p>
+
+                <img
+                  src="./ritual.png"
+                  className="png"
+                  alt="Tarot ritual key placement"
+                  style={{ maxWidth: "100%", height: "auto" }}
+                />
+
+                <p style={{ opacity: 0.8 }}>
+                  You will only receive a reading once all fingers have been sensed.
+                </p>
+              </>
+            )}
           </div>
         </div>
-        
+
         <div className={`fade ${phase === "shuffling" ? "fade-in" : "fade-out"}`}>
           <div className="shuffle-wrap">
-            <DeckShuffle enabled={phase ==="shuffling"} count={9} speed={250} />
-            <p>The deck begins to shuffle, release when you feel it right to do so...</p>
+            <DeckShuffle enabled={phase === "shuffling"} count={9} speed={250} />
+            <p> {ritualMode === "keys"? "The deck begins to shuffle, release when you feel it right to do so..." : ""} </p>
           </div>
         </div>
+
 
         <div className={`fade ${phase === "cardsDown" ? "fade-in" : "fade-out"}`}>
           <div className="dealRow">
@@ -263,7 +369,7 @@ export default function App() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
     </>
   );
 }

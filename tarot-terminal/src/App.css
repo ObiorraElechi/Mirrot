@@ -28,7 +28,6 @@ pre.stars-ascii {
   overflow-x: auto;
   overflow: none;
 
-
   pointer-events: none;
   user-select: none;
   z-index: 0;
@@ -37,6 +36,28 @@ pre.stars-ascii {
 .header {
   text-align: center;
   margin-bottom: 40px;
+}
+
+.modeToggle{
+  position: fixed;
+  top: 14px;
+  right: 14px;
+  z-index: 9999;
+  display: flex;
+  gap: 10px;
+}
+.modeToggle button{
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  background: rgba(0,0,0,0.55);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.modeToggle button:disabled{
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .tagline {
@@ -178,12 +199,12 @@ pre.stars-ascii {
   z-index: 0;
 }
 
-
 .cardHover {
   transform-style: preserve-3d;
   transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;;
 }
+
 @media (hover: hover) and (pointer: fine) {
   .tiltOuter:hover .cardHover {
     transform: scale(1.01); 

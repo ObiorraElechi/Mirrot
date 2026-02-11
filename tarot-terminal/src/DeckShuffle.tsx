@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./DeckShuffle.css";
 
-type Props = { enabled: boolean; count?: number; speed?: number };
+type Props = { enabled: boolean; count?: number; speed?: number; staticWhenDisabled?: boolean };
 
 const FLING_MS = 1000;  // must match CSS animation duration
 const DROP_AT = 0.55;   // when the flying card should drop behind (optional)
 
-export default function DeckShuffle({ enabled, count = 9, speed = 140 }: Props) {
+export default function DeckShuffle({ enabled, count = 9, speed = 140, staticWhenDisabled= true }: Props) {
     const ids = useMemo(() => Array.from({ length: count }, (_, i) => i), [count]);
 
     const [order, setOrder] = useState<number[]>(ids);
@@ -73,12 +73,15 @@ export default function DeckShuffle({ enabled, count = 9, speed = 140 }: Props) 
 
     // reset when disabled or count changes
     useEffect(() => {
-    if (!enabled) {
-        setOrder(ids);
-        setFlyingId(null);
-        setSentToBack(false);
-    }
-    }, [enabled, ids]);
+        if (!enabled) {
+            setFlyingId(null);
+            setSentToBack(false);
+            if (!staticWhenDisabled) {
+            setOrder(ids);
+            }
+        }
+    }, [enabled, ids, staticWhenDisabled]);
+
 
     // stack should'nt be rendering the flying card
     const stack = flyingId === null ? order : order.filter(id => id !== flyingId);
@@ -108,7 +111,7 @@ export default function DeckShuffle({ enabled, count = 9, speed = 140 }: Props) 
                 zIndex: 100 - i,
             }}
             >
-            <img className="cardImg" src="/tarotBack.png" alt="" draggable={false} />
+            <img className="cardImg" src="./tarotBack.png" alt="" draggable={false} />
             </div>
         );
         })}
@@ -135,7 +138,7 @@ export default function DeckShuffle({ enabled, count = 9, speed = 140 }: Props) 
             }}
             onAnimationEnd={handleOverlayEnd}
         >
-            <img className="cardImg" src="/tarotBack.png" alt="" draggable={false} />
+            <img className="cardImg" src="./tarotBack.png" alt="" draggable={false} />
         </div>
         )}
     </div>
