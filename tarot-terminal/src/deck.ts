@@ -85,8 +85,6 @@ export const DECK = [
     "/Tarot-Ascii/Wands/14.txt",
 ] as const;
 
-type DrawnCard = Card & { reversed: boolean };
-
 const SUITS = ["MajorArcana", "Cups", "Pentacles", "Swords", "Wands"];
 
 function isSuit(x: string): x is Suit {

@@ -1,4 +1,4 @@
-import type { CardPath, Suit, MajorRank, MinorRank } from "./deck";
+import type { CardPath } from "./deck";
 
 export type Meaning = {
     upright: string;

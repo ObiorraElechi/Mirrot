@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import './App.css';
 import AsciiBackground from "./asciiBackground";
 import DeckShuffle from "./DeckShuffle";
@@ -104,31 +104,18 @@ const MIRROT_TITLE = String.raw`
 export default function App() {
   const collector = useMemo(() => new EntropyCollectorRitual(), []);
   const [phase, setPhase] = useState<Phase>("ritual");
-  const [heldCount, setHeldCount] = useState(0);
-  const [requiredCount, setRequiredCount] = useState(0);
-  const [ritualStarted, setRitualStarted] = useState(false);
-  const [done, setDone] = useState(false);
-  const [ritualMs, setRitualMs] = useState<number | null>(null);
+
   const [drawn, setDrawn] = useState<DrawnCard[]>([]);
   const [cardBack, setCardBack] = useState<string>("LOADING BACK...");
-  const [cardTransition, setCardTransition] = useState<string | undefined>(undefined);
 
   // NEW: reveal rules
   const [revealedCount, setRevealedCount] = useState(0);
   const [flipLock, setFlipLock] = useState(false); // allow only one flip at a time
 
    useEffect(() => {
-    fetch("/Tarot-Ascii/cardBack.txt").then(r => r.text()).then(setCardBack).catch(() => {
+    fetch("./Tarot-Ascii/cardBack.txt").then(r => r.text()).then(setCardBack).catch(() => {
       setCardBack("/Tarot-Ascii/cardBack.txt");
     });
-
-    fetch("/Tarot-Ascii/cardTransition.txt")
-      .then(r => r.text())
-      .then(setCardTransition)
-      .catch(() => {
-        // transition optional
-        setCardTransition(undefined);
-      });
   }, []);
 
   useEffect(() => {
