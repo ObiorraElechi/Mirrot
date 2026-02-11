@@ -1,5 +1,6 @@
 html, body {
   margin: 0;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
   background: #000;
   color: #fff;
 }
@@ -35,7 +36,15 @@ pre.stars-ascii {
 
 .header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+  transform: translateY(-25px);
+}
+
+.ritual-hint {
+  margin-top: 0px;     /* pulls it UP toward the deck */
+  margin-bottom: 0;
+  opacity: 100;
+  transform: translateY(-50px)
 }
 
 .modeToggle{
@@ -82,12 +91,14 @@ pre.stars-ascii {
   align-items: center;
   justify-content: flex-start;
   padding-top: 0px;
+  transform: translateY(-50px);
 }
 
 .fade {
   transition: opacity 900ms ease, transform 900ms ease;
   will-change: opacity, transform;
 }
+
 .fade-in {
   opacity: 1;
   transform: scale(1);

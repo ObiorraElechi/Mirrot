@@ -300,7 +300,7 @@ export default function App() {
                   <DeckShuffle enabled={pressing} count={9} speed={250} />
                 </div>
 
-                <p style={{ opacity: 100, fontSize: "1rem" }}>
+                <p className="ritual-hint">
                   {pressing ? "The deck begins to shuffle, release when you feel it right to do so..." : "Press the deck to begin your reading"}
                 </p>
               </>
@@ -317,7 +317,7 @@ export default function App() {
                   style={{ maxWidth: "100%", height: "auto" }}
                 />
 
-                <p style={{ opacity: 0.8 }}>
+                <p style={{ opacity: 1 }}>
                   You will only receive a reading once all fingers have been sensed.
                 </p>
               </>
