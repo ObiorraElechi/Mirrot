@@ -289,7 +289,7 @@ export default function App() {
   };
 
   const renderSpreadBoard = (layout: LayoutSlot[]) => {
-  const anchorY = spread === "ppf" ? Math.round(window.innerHeight * 0.50) : Math.round(window.innerHeight * 0.70);
+  const anchorY = spread === "ppf" ? Math.round(window.innerHeight * 0.75) : Math.round(window.innerHeight * 0.90);
 
   return (
     <div className={`spreadBoard ${spread}`}>
