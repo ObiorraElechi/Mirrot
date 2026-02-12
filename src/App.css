@@ -40,6 +40,12 @@ pre.stars-ascii {
   margin-top: 20px;
 }
 
+.subTitle {
+  opacity: 0.8;
+  font-size: 18px;
+  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+}
+
 .ritual-hint {
   margin-top: 8px;
   margin-bottom: 10px;

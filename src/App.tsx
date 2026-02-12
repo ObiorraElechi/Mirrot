@@ -416,7 +416,9 @@ export default function App() {
       
         <div className="header">
           <pre className="title-ascii">{MIRROT_TITLE}</pre>
-          <p style={{opacity: 0.8, fontSize: 18, fontFamily:"cambria"}}><i>A mirror's reflection of your soul</i></p>
+          <p className="subTitle">
+            <i>A mirror's reflection of your soul</i>
+          </p>
         </div>
       
         <div className="stage">
