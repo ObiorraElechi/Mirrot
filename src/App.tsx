@@ -138,10 +138,10 @@ const CC_LAYOUT: LayoutSlot[] = [
   { label: "4. The Future", position: "cc-4",  dx:  250, dy: -675 },
   { label: "5. Above", position: "cc-5",  dx:   0,  dy: -925 },
   { label: "6. Below", position: "cc-6",  dx:   0,  dy: -425 },
-  { label: "7. Advice", position: "cc-7",  dx:  500, dy: -300 },
-  { label: "8. External Influences", position: "cc-8",  dx:  500, dy: -550 },
-  { label: "9. Hopes & Fears", position: "cc-9",  dx:  500, dy: -800 },
-  { label: "10. Outcome", position: "cc-10", dx:  500, dy: -1050 },
+  { label: "7. Advice", position: "cc-7",  dx:  450, dy: -300 },
+  { label: "8. External Influences", position: "cc-8",  dx:  450, dy: -550 },
+  { label: "9. Hopes & Fears", position: "cc-9",  dx:  450, dy: -800 },
+  { label: "10. Outcome", position: "cc-10", dx:  450, dy: -1050 },
 ];
 
 type DrawnCard = {
@@ -416,7 +416,7 @@ export default function App() {
       
         <div className="header">
           <pre className="title-ascii">{MIRROT_TITLE}</pre>
-          <p style={{opacity: 0.8, fontSize: 18}}><i>A mirror's reflection of your soul</i></p>
+          <p style={{opacity: 0.8, fontSize: 18, fontFamily:"cambria"}}><i>A mirror's reflection of your soul</i></p>
         </div>
       
         <div className="stage">
