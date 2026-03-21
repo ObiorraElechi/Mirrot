@@ -1,6 +1,6 @@
 pre
 .ascii {
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   white-space: pre;
   line-height: 1;
   font-size: 9;

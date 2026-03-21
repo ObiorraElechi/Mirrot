@@ -1,6 +1,6 @@
 html, body {
   margin: 0;
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   background: #000;
   color: #fff;
 }
@@ -43,7 +43,7 @@ pre.stars-ascii {
 .subTitle {
   opacity: 0.8;
   font-size: 18px;
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
 }
 
 .ritual-hint {
@@ -63,7 +63,7 @@ pre.stars-ascii {
 }
 
 .modeToggle button{
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   background: rgba(0,0,0,0.55);
   border: 1px solid rgba(255,255,255,0.18);
   color: #fff;
@@ -156,7 +156,7 @@ pre.stars-ascii {
 .flipFront.rev { --rev-rot: 180deg; }
 
 .ascii {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   white-space: pre;
   line-height: 1;
   font-variant-ligatures: none;
@@ -312,7 +312,7 @@ pre.stars-ascii {
 }
 
 .spreadToggle button{
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   background: rgba(0,0,0,0.55);
   border: 1px solid rgba(255,255,255,0.18);
   color: #fff;
@@ -372,7 +372,7 @@ pre.stars-ascii {
 }
 
 .ritual-ui{
-  font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   display: flex;
   flex-direction: column;
   align-items: center;

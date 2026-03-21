@@ -184,6 +184,7 @@ export default function App() {
   const clickSeedRef = useRef<number | null>(null);
   const dealTimerRef = useRef<number | null>(null);
 
+  
   useEffect(() => {
     return () => {
       if (dealTimerRef.current) window.clearTimeout(dealTimerRef.current);
@@ -370,7 +371,6 @@ export default function App() {
           paths.map(async (p, i) => {
             const meta = parseCard(p);
             const text = await fetch(p).then(r => r.text());
-
             const reversed = rand() < 0.35;
             const displayName = (meta.suit === "MajorArcana") ? meta.name : `${meta.name} of ${meta.suit}`;
 
