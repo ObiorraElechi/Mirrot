@@ -11,7 +11,7 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
         reversed: "Fools rush in where angels fear to tread."
     },
     "/Tarot-Ascii/MajorArcana/01.txt": {
-        upright: "Where there's a will.",
+        upright: "Where there's a will, there is a way.",
         reversed: "All that glitters is not gold."
     },
     "/Tarot-Ascii/MajorArcana/02.txt": {

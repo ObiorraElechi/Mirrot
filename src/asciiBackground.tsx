@@ -1,8 +1,18 @@
 import { useEffect, useState } from "react";
+import { useViewport } from "./useViewport";
 
 function pad2(n: number) {
   return String(n).padStart(2, "0");
 }
+
+// The star frames are a fixed character grid, so their natural size follows
+// from the font metrics declared for pre.stars-ascii in App.css.
+const STARS_COLS = 240;
+const STARS_ROWS = 64;
+const STARS_FONT_PX = 16;
+const STARS_LINE_PX = 10;
+const STARS_NATURAL_W = STARS_COLS * STARS_FONT_PX * 0.5;
+const STARS_NATURAL_H = STARS_ROWS * STARS_LINE_PX;
 
 type Props = {
   enabled: boolean;
@@ -13,6 +23,13 @@ type Props = {
 export default function AsciiBackground({ enabled, fps = 12, frameCount = 60 }: Props) {
   const [frames, setFrames] = useState<string[]>([]);
   const [idx, setIdx] = useState(0);
+  const viewport = useViewport();
+
+  // Cover the viewport rather than assuming a desktop aspect ratio.
+  const coverScale = Math.max(
+    viewport.width / STARS_NATURAL_W,
+    viewport.height / STARS_NATURAL_H,
+  );
 
   // preload all frames once
   useEffect(() => {
@@ -41,7 +58,11 @@ export default function AsciiBackground({ enabled, fps = 12, frameCount = 60 }: 
   }, [enabled, fps, frames.length]);
 
   return (
-    <pre className="stars-ascii" aria-hidden="true">
+    <pre
+      className="stars-ascii"
+      aria-hidden="true"
+      style={{ transform: `scale(${coverScale.toFixed(3)})` }}
+    >
       {frames.length ? frames[idx] : ""}
     </pre>
   );

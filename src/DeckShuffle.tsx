@@ -1,12 +1,24 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import "./DeckShuffle.css";
 
-type Props = { enabled: boolean; count?: number; speed?: number; staticWhenDisabled?: boolean };
+type Props = {
+  enabled: boolean;
+  back: string;
+  count?: number;
+  speed?: number;
+  staticWhenDisabled?: boolean;
+};
 
 const FLING_MS = 1000;  // must match CSS animation duration
 const DROP_AT = 0.55;   // when the flying card should drop behind (optional)
 
-export default function DeckShuffle({ enabled, count = 9, speed = 140, staticWhenDisabled= true }: Props) {
+export default function DeckShuffle({
+  enabled,
+  back,
+  count = 9,
+  speed = 140,
+  staticWhenDisabled = true,
+}: Props) {
     const ids = useMemo(() => Array.from({ length: count }, (_, i) => i), [count]);
 
     const [order, setOrder] = useState<number[]>(ids);
@@ -91,6 +103,8 @@ export default function DeckShuffle({ enabled, count = 9, speed = 140, staticWhe
     setSentToBack(false);
     };
 
+    const pose = (extra: CSSProperties): CSSProperties => extra;
+
     return (
     <div className="deck" aria-hidden="true">
         {stack.map((cardId, i) => {
@@ -103,15 +117,15 @@ export default function DeckShuffle({ enabled, count = 9, speed = 140, staticWhe
             <div
             key={cardId}
             className="cardBack"
-            style={{
-                ["--x" as any]: `${x}px`,
-                ["--y" as any]: `${y}px`,
-                ["--r" as any]: `${r}deg`,
-                ["--s" as any]: s,
+            style={pose({
+                ["--x" as string]: `${x}px`,
+                ["--y" as string]: `${y}px`,
+                ["--r" as string]: `${r}deg`,
+                ["--s" as string]: String(s),
                 zIndex: 100 - i,
-            }}
+            })}
             >
-            <img className="cardImg" src="./tarotBack.png" alt="" draggable={false} />
+            <pre className="ascii cardAscii shuffleFace">{back}</pre>
             </div>
         );
         })}
@@ -120,25 +134,20 @@ export default function DeckShuffle({ enabled, count = 9, speed = 140, staticWhe
         {flyingId !== null && (
         <div
             className={`cardBack flingOverlay ${sentToBack ? "sentBack" : ""}`}
-            style={{
-            // start pose = top slot (0)
-            ["--x" as any]: `0px`,
-            ["--y" as any]: `0px`,
-            ["--r" as any]: `0deg`,
-            ["--s" as any]: 1,
-
-            // end pose = back slot
-            ["--bx" as any]: `${bx}px`,
-            ["--by" as any]: `${by}px`,
-            ["--br" as any]: `${br}deg`,
-            ["--bs" as any]: bs,
-
-            // stay on top, then optionally drop behind
+            style={pose({
+            ["--x" as string]: `0px`,
+            ["--y" as string]: `0px`,
+            ["--r" as string]: `0deg`,
+            ["--s" as string]: "1",
+            ["--bx" as string]: `${bx}px`,
+            ["--by" as string]: `${by}px`,
+            ["--br" as string]: `${br}deg`,
+            ["--bs" as string]: String(bs),
             zIndex: sentToBack ? -1 : 9999,
-            }}
+            })}
             onAnimationEnd={handleOverlayEnd}
         >
-            <img className="cardImg" src="./tarotBack.png" alt="" draggable={false} />
+            <pre className="ascii cardAscii shuffleFace">{back}</pre>
         </div>
         )}
     </div>

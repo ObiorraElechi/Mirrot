@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import './App.css';
 import AsciiBackground from "./asciiBackground";
 import DeckShuffle from "./DeckShuffle";
@@ -7,28 +7,56 @@ import { drawCard, parseCard } from "./deck";
 import type { CardPath } from "./deck";
 import { MEANINGS_BY_PATH } from "./tarotMeanings";
 import { TiltWrap } from "./TiltWrap"
+import { BoardViewport, type BoardHandle } from "./BoardViewport";
+import { useBoardGesture } from "./boardGesture";
+import {
+  boardMetrics,
+  cardPixelSize,
+  getCardCount,
+  getLabelsFor,
+  slotCanvasPoint,
+} from "./spreadLayout";
+import type { Label, SpreadType } from "./spreadLayout";
+
+const TAP_SLOP_PX = 10;
+
+function suitClassFor(path: CardPath) {
+  switch (parseCard(path).suit) {
+    case "MajorArcana": return "suit-major";
+    case "Cups":        return "suit-cups";
+    case "Pentacles":   return "suit-pentacles";
+    case "Swords":      return "suit-swords";
+    case "Wands":       return "suit-wands";
+    default:            return "";
+  }
+}
 
 function FlipCard({ back, face, reversed, disabled, onRevealed, }: { back: string; face: string; reversed: boolean; disabled?: boolean; onRevealed?: () => void;}) {
   const [flipped, setFlipped] = useState(false);
-
-  const flipNow = () => {
-    if (disabled) return;
-    if (flipped) return;
-    setFlipped(true);
-    onRevealed?.();
-  };
+  const gesture = useBoardGesture();
+  const pressRef = useRef<{ x: number; y: number } | null>(null);
 
   return (
     <div
       className={`flipCard ${flipped ? "isFlipped" : ""} ${disabled ? "disabled" : ""}`}
       onPointerDown={(e) => {
         if (disabled || flipped) return;
-
-        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
-        e.preventDefault();
-
-        flipNow();
+        pressRef.current = { x: e.clientX, y: e.clientY };
       }}
+      onPointerUp={(e) => {
+        const press = pressRef.current;
+        pressRef.current = null;
+
+        if (!press || disabled || flipped) return;
+        // A drag across the board is a pan, not a card tap.
+        if (gesture?.panned.current) return;
+        if (Math.hypot(e.clientX - press.x, e.clientY - press.y) > TAP_SLOP_PX) return;
+
+        setFlipped(true);
+        onRevealed?.();
+      }}
+      onPointerCancel={() => { pressRef.current = null; }}
+      onContextMenu={(e) => e.preventDefault()}
       role="button"
       aria-disabled={disabled}
       tabIndex={0}
@@ -41,34 +69,88 @@ function FlipCard({ back, face, reversed, disabled, onRevealed, }: { back: strin
   );
 }
 
-function MeaningWindow({ card }: { card: DrawnCard }) {
-  const meaning = MEANINGS_BY_PATH[card.path];
-  const line = card.reversed ? meaning.reversed : meaning.upright;
-
-  const meta = parseCard(card.path);
-  const suitClass =
-    meta.suit === "MajorArcana" ? "suit-major" :
-    meta.suit === "Cups"       ? "suit-cups" :
-    meta.suit === "Pentacles"  ? "suit-pentacles" :
-    meta.suit === "Swords"     ? "suit-swords" :
-    meta.suit === "Wands"      ? "suit-wands" : "";
+/** Hover popover used on precise pointers; lives inside the scaled board. */
+function CardHitArea({
+  revealed,
+  onToggle,
+  children,
+}: {
+  revealed: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  const gesture = useBoardGesture();
 
   return (
-    <div className={`meaningWindow ${suitClass}`}>
-      <div className={`meaningTitle ${suitClass}`}>
-        {card.name}{card.reversed ? " (reversed)" : ""}
-      </div>
-      <div className="line">{line}</div>
+    <div
+      className="cardHitArea"
+      onPointerUp={() => {
+        if (!revealed) return;
+        if (gesture?.panned.current) return;
+        onToggle();
+      }}
+    >
+      {children}
     </div>
   );
 }
 
-function getLabelsFor(spread: SpreadType) {
-  return spread === "ppf" ? PPF_LABELS : CELTIC_LABELS;
-}
+function MeaningSheet({
+  card,
+  index,
+  total,
+  onClose,
+  onPrev,
+  onNext,
+}: {
+  card: DrawnCard;
+  index: number;
+  total: number;
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  const meaning = MEANINGS_BY_PATH[card.path];
+  const line = card.reversed ? meaning.reversed : meaning.upright;
+  const suitClass = card.revealed ? suitClassFor(card.path) : "";
+  const hasPrev = index > 0;
+  const hasNext = index < total - 1;
 
-function getCardCount(spread: SpreadType) {
-  return getLabelsFor(spread).length;
+  return (
+    <div className={`meaningSheet ${suitClass}`} role="dialog" aria-label={`${card.label} meaning`}>
+      <div className="meaningSheetBar">
+        <span className={`meaningTitle ${suitClass}`}>
+          {card.revealed
+            ? `${card.name}${card.reversed ? " (reversed)" : ""}`
+            : "Unrevealed"}
+        </span>
+        <button type="button" className="meaningSheetClose" onClick={onClose} aria-label="Close meaning">
+          x
+        </button>
+      </div>
+      <p className="meaningSheetSlot">{card.label}</p>
+      <p className="meaningSheetBody">
+        {card.revealed ? line : "Turn this card to continue the reading."}
+      </p>
+      <div className="meaningSheetNav">
+        {hasPrev ? (
+          <button type="button" className="meaningSheetArrow meaningSheetArrowPrev" onClick={onPrev} aria-label="Previous card">
+            {"<--"}
+          </button>
+        ) : (
+          <span className="meaningSheetArrowSpacer" aria-hidden="true" />
+        )}
+        <span className="meaningSheetProgress">{index + 1} / {total}</span>
+        {hasNext ? (
+          <button type="button" className="meaningSheetArrow meaningSheetArrowNext" onClick={onNext} aria-label="Next card">
+            {"-->"}
+          </button>
+        ) : (
+          <span className="meaningSheetArrowSpacer" aria-hidden="true" />
+        )}
+      </div>
+    </div>
+  );
 }
 
 const REQUIRED_KEYS = ["a", "s", "d", "f", " ", "j", "k", "l", ";"];
@@ -95,54 +177,6 @@ const MIRROT_TITLE = String.raw`
  `
 
 type Phase = | "ritual" | "shuffling" | "cardsDown" | "revealed";
-type SpreadType = "ppf" | "cc";
-
-const PPF_LABELS = ["Past", "Present", "Future"] as const;
-
-const CELTIC_LABELS = [
-  "1. The Present",
-  "2. The Challenge",
-  "3. The Past",
-  "4. The Future",
-  "5. Above",
-  "6. Below",
-  "7. Advice",
-  "8. External Influences",
-  "9. Hopes & Fears",
-  "10. Outcome",
-] as const;
-
-type LabelPPF = typeof PPF_LABELS[number];
-type LabelCC = typeof CELTIC_LABELS[number];
-type Label = LabelPPF | LabelCC;
-
-type LayoutSlot = {
-  label: Label;
-  position: string;
-  dx: number;
-  dy: number;
-};
-
-const SPREAD_SCALE = 1.5;
-
-const PPF_LAYOUT: LayoutSlot[] = [
-  { label: "Past", position: "ppf-1", dx: -345, dy:  -850 },
-  { label: "Present", position: "ppf-2", dx:   0,  dy: -850 },
-  { label: "Future", position: "ppf-3",  dx:  345, dy: -850 },
-]
-
-const CC_LAYOUT: LayoutSlot[] = [
-  { label: "1. The Present", position: "cc-1",  dx:   0,  dy: -675 },
-  { label: "2. The Challenge", position: "cc-2",  dx:   0,  dy: -675 },
-  { label: "3. The Past", position: "cc-3",  dx: -250, dy: -675 },
-  { label: "4. The Future", position: "cc-4",  dx:  250, dy: -675 },
-  { label: "5. Above", position: "cc-5",  dx:   0,  dy: -925 },
-  { label: "6. Below", position: "cc-6",  dx:   0,  dy: -425 },
-  { label: "7. Advice", position: "cc-7",  dx:  450, dy: -300 },
-  { label: "8. External Influences", position: "cc-8",  dx:  450, dy: -550 },
-  { label: "9. Hopes & Fears", position: "cc-9",  dx:  450, dy: -800 },
-  { label: "10. Outcome", position: "cc-10", dx:  450, dy: -1050 },
-];
 
 type DrawnCard = {
     label: Label; 
@@ -177,12 +211,17 @@ export default function App() {
 
   const [revealedCount, setRevealedCount] = useState(0);
   const [flipLock, setFlipLock] = useState(false); 
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const boardRef = useRef<BoardHandle | null>(null);
+  const deckPressRef = useRef<HTMLDivElement | null>(null);
   
   const SHUFFLE_AFTER_RELEASE_MS = 0;
   const [pressing, setPressing] = useState(false);
   const pressStartRef = useRef<number | null>(null);
   const clickSeedRef = useRef<number | null>(null);
   const dealTimerRef = useRef<number | null>(null);
+
+  const metrics = useMemo(() => boardMetrics(spread), [spread]);
 
   
   useEffect(() => {
@@ -231,6 +270,7 @@ export default function App() {
         setDrawn(cards);
         setRevealedCount(0);
         setFlipLock(false);
+        setOpenIndex(null);
         setPhase("cardsDown");
       });
     }, SHUFFLE_AFTER_RELEASE_MS);
@@ -255,15 +295,47 @@ export default function App() {
     });
   }, []);
 
+  useEffect(() => {
+    const el = deckPressRef.current;
+    if (!el) return;
+
+    const block = (event: Event) => {
+      event.preventDefault();
+    };
+
+    el.addEventListener("touchstart", block, { passive: false });
+    el.addEventListener("contextmenu", block);
+    el.addEventListener("selectstart", block);
+    return () => {
+      el.removeEventListener("touchstart", block);
+      el.removeEventListener("contextmenu", block);
+      el.removeEventListener("selectstart", block);
+    };
+  }, [ritualMode, phase]);
+
+  useEffect(() => {
+    if (openIndex == null || phase !== "cardsDown") return;
+    const point = slotCanvasPoint(metrics, openIndex);
+    const size = cardPixelSize(metrics.cardFontPx);
+    boardRef.current?.focusCanvasPoint(point.x, point.y, {
+      bottomInset: 210,
+      fitWidth: size.width,
+      fitHeight: size.height,
+    });
+  }, [openIndex, metrics, phase]);
+
 
   const renderCardColumn = (card: DrawnCard, i: number) => {  
     const disabled = flipLock || !canFlipMore;
     
     return (
       <div className="cardColumn" style={{ textAlign: "center" }}>
-        <div style={{ opacity: 1, letterSpacing: 1.5 }}>{card.label}</div>
+        <div className="slotLabel">{card.label}</div>
 
-        <div className="cardHitArea">
+        <CardHitArea
+          revealed={card.revealed}
+          onToggle={() => setOpenIndex((open) => (open === i ? null : i))}
+        >
           <TiltWrap i={i} enabled={phase === "cardsDown"}>
             <div className="cardFrame">
               <FlipCard
@@ -275,6 +347,7 @@ export default function App() {
                   setFlipLock(true);
                   window.setTimeout(() => setFlipLock(false), 600);
                   setRevealedCount((n) => n + 1);
+                  setOpenIndex(i);
                   setDrawn((prev) =>
                     prev.map((x) => (x.path === card.path ? { ...x, revealed: true } : x))
                   );
@@ -282,53 +355,47 @@ export default function App() {
               />
             </div>
           </TiltWrap>
-
-          {card.revealed && <MeaningWindow card={card} />}
-        </div>
-        </div>
-    );
-  };
-
-  const renderSpreadBoard = (layout: LayoutSlot[]) => {
-  const anchorY = spread === "ppf" ? Math.round(window.innerHeight * 0.75) : Math.round(window.innerHeight * 0.90);
-
-  return (
-    <div className={`spreadBoard ${spread}`}>
-      {layout.map((slot, i) => {
-        const c = drawn[i];
-        if (!c) return null;
-
-        const z = slot.position === "cc-2" ? 20 : slot.position === "cc-1" ? 10 : 1;
-        const isChallenge = slot.position === "cc-2";
-
-        const tx = slot.dx * SPREAD_SCALE;
-        const ty = slot.dy * SPREAD_SCALE;
-
-        const slotTransform =
-          `translateX(-50%) translate(${tx}px, ${ty}px)` +
-          (isChallenge ? " rotate(90deg)" : "");
-
-        return (
-          <div
-            key={`${slot.position}-${c.path}`}
-            className={`slot ${slot.position}`}
-            style={{
-              left: "50%",
-              top: `${anchorY}px`,
-              transform: slotTransform,
-              ["--slot-z" as any]: z,
-            }}
-          >
-            {renderCardColumn(c, i)}
-          </div>
-        );
-      })}
+        </CardHitArea>
       </div>
     );
   };
 
-  const renderPPF = () => renderSpreadBoard(PPF_LAYOUT);
-  const renderCC = () => renderSpreadBoard(CC_LAYOUT);
+  const renderSpreadBoard = () => (
+    <BoardViewport ref={boardRef} key={spread} boardWidth={metrics.width} boardHeight={metrics.height}>
+      <div
+        className={`spreadBoard ${spread}`}
+        style={{
+          width: `${metrics.width}px`,
+          height: `${metrics.height}px`,
+          ["--card-font" as string]: `${metrics.cardFontPx}px`,
+        } as CSSProperties}
+      >
+        {metrics.slots.map((slot, i) => {
+          const card = drawn[i];
+          if (!card) return null;
+
+          const transform =
+            `translateX(-50%) translate(${slot.tx}px, ${slot.ty}px)` +
+            (slot.rotate ? ` rotate(${slot.rotate}deg)` : "");
+
+          return (
+            <div
+              key={`${slot.position}-${card.path}`}
+              className={`slot ${slot.position}${openIndex === i ? " isFocused" : ""}`}
+              style={{
+                left: "50%",
+                top: 0,
+                transform,
+                ["--slot-z" as string]: String(slot.z ?? 1),
+              } as CSSProperties}
+            >
+              {renderCardColumn(card, i)}
+            </div>
+          );
+        })}
+      </div>
+    </BoardViewport>
+  );
 
   useEffect(() => {
     if (ritualMode !== "keys") return;
@@ -380,6 +447,7 @@ export default function App() {
           setDrawn(cards);
           setRevealedCount(0);
           setFlipLock(false);
+          setOpenIndex(null);
           setPhase("cardsDown");
         });
       }
@@ -398,12 +466,23 @@ export default function App() {
   const canFlipMore = revealedCount < maxFlips; 
   const showRitual = phase === "ritual";
   const showShuffle = phase === "shuffling";
+  const openCard = openIndex != null ? drawn[openIndex] ?? null : null;
+
+  const goToCard = (index: number) => {
+    if (index < 0) return;
+    if (index >= drawn.length) {
+      setOpenIndex(null);
+      boardRef.current?.resetView();
+      return;
+    }
+    setOpenIndex(index);
+  };
 
   return (
     <>
       <AsciiBackground enabled={true} fps={12} frameCount={60} />
 
-      <div className="layer">
+      <div className={`layer${phase === "cardsDown" ? " isReading" : ""}`}>
       
         <div className="modeToggle">
           <button onClick={() => setRitualMode("click")} disabled={phase !== "ritual"}>
@@ -421,7 +500,7 @@ export default function App() {
           </p>
         </div>
       
-        <div className="stage">
+        <div className={`stage${showRitual || showShuffle ? " isRitual" : ""}`}>
         <div className={`fade ${phase === "ritual" || phase === "shuffling" ? "fade-in" : "fade-out"}`}>
 
           <div className="ritual-ui">
@@ -444,7 +523,7 @@ export default function App() {
             <div className="ritualMain">
               {showShuffle ? (
                 <div className="shuffle-wrap">
-                  <DeckShuffle enabled={true} count={9} speed={250} />
+                  <DeckShuffle enabled={true} back={cardBack} count={9} speed={250} />
                   {ritualMode === "keys" ? (
                     <p>The deck begins to shuffle, release when you feel it right to do so...</p>
                   ) : null}
@@ -452,7 +531,8 @@ export default function App() {
               ) : ritualMode === "click" ? (
                 <>
                   <div
-                    style={{ display: "inline-block", cursor: "pointer", userSelect: "none" }}
+                    ref={deckPressRef}
+                    className="deckPress"
                     onPointerDown={(e) => {
                       e.preventDefault();
                       (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
@@ -460,8 +540,9 @@ export default function App() {
                     }}
                     onPointerUp={(e) => { e.preventDefault(); endClickRitual(); }}
                     onPointerCancel={cancelClickRitual}
+                    onContextMenu={(e) => e.preventDefault()}
                   >
-                    <DeckShuffle enabled={pressing} count={9} speed={250} />
+                    <DeckShuffle enabled={pressing} back={cardBack} count={9} speed={250} />
                   </div>
 
                   <p className="ritual-hint">
@@ -474,9 +555,8 @@ export default function App() {
                 <>
                   <img
                     src="./ritual.png"
-                    className="png"
+                    className="png ritualKeys"
                     alt="Tarot ritual key placement"
-                    style={{ maxWidth: "50%", height: "auto" }}
                   />
                   <p style={{ opacity: 1 }}>
                     You will only receive a reading once all fingers have been sensed.
@@ -486,11 +566,22 @@ export default function App() {
               </div>
             </div>
           </div>
-          <div className={`fade ${phase === "cardsDown" ? "fade-in" : "fade-out"}`}>
-            {spread === "ppf" ? renderPPF() : renderCC() }
+          <div className={`fade boardFade ${phase === "cardsDown" ? "fade-in" : "fade-out"}`}>
+            {drawn.length > 0 ? renderSpreadBoard() : null}
           </div>
         </div>
       </div>
+
+      {openCard && openIndex != null && (
+        <MeaningSheet
+          card={openCard}
+          index={openIndex}
+          total={drawn.length}
+          onClose={() => setOpenIndex(null)}
+          onPrev={() => goToCard(openIndex - 1)}
+          onNext={() => goToCard(openIndex + 1)}
+        />
+      )}
     </>
   );
 }
