@@ -30,8 +30,11 @@ export type LayoutSlot = {
 
 // Every card is a fixed character grid, so its rendered size is
 // columns * advance * font-size. Iosevka's advance is half an em.
+// The art files are all 100 columns but run 81-87 rows (the back is 82), so
+// the grid is sized to the tallest and shorter cards are centred inside it.
+// Otherwise a card's black panel changes size between neighbours and on flip.
 export const CARD_COLS = 100;
-export const CARD_ROWS = 83;
+export const CARD_ROWS = 87;
 const CHAR_ADVANCE_EM = 0.5;
 const CARD_LINE_HEIGHT = 1;
 

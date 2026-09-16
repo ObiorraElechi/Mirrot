@@ -56,6 +56,19 @@ pre.stars-ascii {
   z-index: 0;
 }
 
+/* Present for screen readers, absent for everyone else. */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .header {
   text-align: center;
   font-size: 15px;
@@ -120,6 +133,38 @@ pre.stars-ascii {
 .spreadToggle button:disabled {
   opacity: 0.50;
   cursor: not-allowed;
+}
+
+.modeToggle {
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 4px 4px 10px;
+}
+
+.modeToggleLabel {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
+.modeToggle button {
+  border-color: rgba(255, 255, 255, 0.32);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+}
+
+/* Without this there was no way to tell which input mode was active. */
+.modeToggle button.active {
+  background: #4300797c;
+  border-color: rgba(255, 255, 255, 0.55);
+  color: #fff;
+}
+
+.modeToggle button.active:disabled {
+  opacity: 0.85;
 }
 
 .stage {
@@ -223,15 +268,32 @@ pre.stars-ascii {
 .flipSide {
   grid-area: 1 / 1;
   background: #000000cc;
-  display: inline-block;
+  /* Art files vary in row count, so pin the panel to the tallest and centre
+     shorter cards inside it — otherwise neighbours look different sizes and
+     the panel resizes mid-flip. See CARD_ROWS in spreadLayout.ts. */
+  height: calc(var(--card-rows, 87) * var(--card-font));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   backface-visibility: hidden;
   transform-style: preserve-3d;
   pointer-events: none;
   color: rgba(255, 255, 255, 0.8);
 }
 
+/* An unturned card reads as dormant, so revealed progress is visible at a glance. */
+.flipBack {
+  color: rgba(255, 255, 255, 0.70);
+}
+
+
+.flipFront {
+  color: rgba(255, 255, 255, 0.92);
+}
+
 .flipBack { transform: translateZ(1px); }
 .flipFront { --rev-rot: 0deg; transform: rotateY(180deg) translateZ(1px) rotate(var(--rev-rot)); }
+
 .flipFront.rev { --rev-rot: 180deg; }
 
 .ascii {
@@ -437,6 +499,21 @@ pre.stars-ascii {
   z-index: 9999;
 }
 
+.slot {
+  transition: opacity 320ms ease, filter 320ms ease;
+}
+
+/* While a card is being read, everything else recedes. This is also what keeps
+   the rotated Challenge card from burying the Present underneath it. */
+.spreadBoard.isFocusing .slot:not(.isFocused) {
+  opacity: 0.3;
+  filter: saturate(0.55);
+}
+
+.spreadBoard.isFocusing .slot:not(.isFocused) .slotLabel {
+  opacity: 0.6;
+}
+
 .spreadBoard.cc .cc-2 > .cardColumn > .slotLabel {
   opacity: 1;
   color: #fff;
@@ -519,6 +596,7 @@ pre.stars-ascii {
 }
 
 .boardHint {
+  transition: opacity 250ms ease;
   position: absolute;
   left: 50%;
   bottom: max(8px, env(safe-area-inset-bottom));
@@ -535,6 +613,12 @@ pre.stars-ascii {
   z-index: 2;
 }
 
+/* The sheet is see-through now, so the pan hint reads through it and collides
+   with the progress counter. It is also moot while a card is being read. */
+body:has(.meaningSheet) .boardHint {
+  opacity: 0;
+}
+
 .meaningSheet {
   position: fixed;
   left: 50%;
@@ -543,9 +627,11 @@ pre.stars-ascii {
   width: min(560px, 100%);
   box-sizing: border-box;
   padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
-  background: color-mix(in srgb, var(--suit, #444) 22%, rgba(0, 0, 0, 0.72));
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  /* Deliberately see-through: the starfield should still flicker behind the
+     text. No backdrop blur — the stars are single glyphs, so any blur turns
+     them into smears no matter how low the alpha goes. The tint alone is
+     enough separation, and the body text measures ~12:1 against it. */
+  background: color-mix(in srgb, var(--suit, #444) 14%, rgba(0, 0, 0, 0.40));
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-bottom: none;
   border-top-left-radius: 16px;
@@ -628,4 +714,21 @@ pre.stars-ascii {
 
 .layer.isReading .title-ascii {
   font-size: clamp(3.5px, 1.1vw + 1.5px, 8px);
+}
+
+
+/* Every ambient animation here is decorative; the reading works without them.
+   TiltWrap already opts out in JS, so this covers the CSS-driven motion. */
+@media (prefers-reduced-motion: reduce) {
+  .flipInner,
+  .fade,
+  .boardWorld.isAnimating,
+  .cardHover,
+  .slot {
+    transition-duration: 1ms;
+  }
+
+  .dealCard {
+    animation-duration: 1ms;
+  }
 }

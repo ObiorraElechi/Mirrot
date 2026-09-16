@@ -36,7 +36,7 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
     },
     "/Tarot-Ascii/MajorArcana/07.txt": {
         upright: "Where there's drive, there's victory.",
-        reversed: "Ikaris flew too close to the sun."
+        reversed: "Icarus flew too close to the sun."
     },
     "/Tarot-Ascii/MajorArcana/08.txt": {
         upright: "Patience is power.",

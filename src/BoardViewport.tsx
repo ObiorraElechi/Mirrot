@@ -90,11 +90,26 @@ export const BoardViewport = forwardRef<BoardHandle, Props>(function BoardViewpo
   const zoomedIn = baseScale !== null && transform.scale > baseScale + 0.02;
   const canExplore = baseScale !== null && (baseScale < 1 || zoomedIn);
 
+  /**
+   * Extra pan allowance, in host pixels, granted once a card has been focused.
+   * Without it the board can never travel further than its own bounding box,
+   * so a card on the outer edge of a spread stops against the viewport edge
+   * instead of reaching the centre. See focusCanvasPoint.
+   */
+  const pad = useRef<Point>({ x: 0, y: 0 });
+
   const [prevBaseScale, setPrevBaseScale] = useState(baseScale);
   if (baseScale !== null && baseScale !== prevBaseScale) {
     setPrevBaseScale(baseScale);
     setTransform({ scale: baseScale, x: 0, y: 0 });
   }
+
+  // A new spread or a resize refits the board, so the focus allowance expires
+  // with it. Child effects run before the parent's, so a focus requested in the
+  // same commit still wins.
+  useEffect(() => {
+    pad.current = { x: 0, y: 0 };
+  }, [baseScale]);
 
   const clampScale = useCallback(
     (scale: number) => {
@@ -108,8 +123,8 @@ export const BoardViewport = forwardRef<BoardHandle, Props>(function BoardViewpo
   const clamp = useCallback(
     (next: Transform): Transform => {
       if (!avail) return next;
-      const overflowX = Math.max(0, (boardWidth * next.scale - avail.w) / 2);
-      const overflowY = Math.max(0, (boardHeight * next.scale - avail.h) / 2);
+      const overflowX = Math.max(0, (boardWidth * next.scale - avail.w) / 2) + pad.current.x;
+      const overflowY = Math.max(0, (boardHeight * next.scale - avail.h) / 2) + pad.current.y;
       return {
         scale: next.scale,
         x: Math.min(overflowX, Math.max(-overflowX, next.x)),
@@ -159,6 +174,12 @@ export const BoardViewport = forwardRef<BoardHandle, Props>(function BoardViewpo
         }
         scale = clampScale(scale);
 
+        // Half a viewport in each axis is exactly what it costs to bring a point
+        // on the board's own edge to the middle of the screen; the inset term
+        // buys back the upward shift that dodges the meaning sheet. The pad
+        // stays in place afterwards so a follow-up drag does not snap the board.
+        pad.current = { x: avail.w / 2, y: avail.h / 2 + bottomInset / 2 };
+
         setAnimating(true);
         setTransform(
           clamp({
@@ -170,6 +191,7 @@ export const BoardViewport = forwardRef<BoardHandle, Props>(function BoardViewpo
       },
       resetView() {
         if (baseScale === null) return;
+        pad.current = { x: 0, y: 0 };
         setAnimating(true);
         setTransform({ scale: baseScale, x: 0, y: 0 });
       },

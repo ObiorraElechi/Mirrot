@@ -11,6 +11,7 @@ import { BoardViewport, type BoardHandle } from "./BoardViewport";
 import { useBoardGesture } from "./boardGesture";
 import {
   boardMetrics,
+  CARD_ROWS,
   cardPixelSize,
   getCardCount,
   getLabelsFor,
@@ -31,7 +32,11 @@ function suitClassFor(path: CardPath) {
   }
 }
 
-function FlipCard({ back, face, reversed, disabled, onRevealed, }: { back: string; face: string; reversed: boolean; disabled?: boolean; onRevealed?: () => void;}) {
+/**
+ * Read aloud, the ASCII art is a wall of punctuation, so the card's name lives
+ * on the control itself and the glyph grid is hidden from assistive tech.
+ */
+function FlipCard({ back, face, reversed, disabled, label, name, onRevealed, }: { back: string; face: string; reversed: boolean; disabled?: boolean; label: string; name: string; onRevealed?: () => void;}) {
   const [flipped, setFlipped] = useState(false);
   const gesture = useBoardGesture();
   const pressRef = useRef<{ x: number; y: number } | null>(null);
@@ -59,9 +64,21 @@ function FlipCard({ back, face, reversed, disabled, onRevealed, }: { back: strin
       onContextMenu={(e) => e.preventDefault()}
       role="button"
       aria-disabled={disabled}
+      aria-label={
+        flipped
+          ? `${label}: ${name}${reversed ? ", reversed" : ""}`
+          : `${label}: face down, activate to turn`
+      }
       tabIndex={0}
+      onKeyDown={(e) => {
+        if (disabled || flipped) return;
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        setFlipped(true);
+        onRevealed?.();
+      }}
     >
-      <div className="flipInner">
+      <div className="flipInner" aria-hidden="true">
         <pre className="ascii cardAscii flipSide flipBack">{back}</pre>
         <pre className={`ascii cardAscii flipSide flipFront ${reversed ? "rev" : ""}`}>{face}</pre>
       </div>
@@ -102,6 +119,7 @@ function MeaningSheet({
   onClose,
   onPrev,
   onNext,
+  sheetRef,
 }: {
   card: DrawnCard;
   index: number;
@@ -109,6 +127,7 @@ function MeaningSheet({
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
+  sheetRef: React.Ref<HTMLDivElement>;
 }) {
   const meaning = MEANINGS_BY_PATH[card.path];
   const line = card.reversed ? meaning.reversed : meaning.upright;
@@ -117,7 +136,7 @@ function MeaningSheet({
   const hasNext = index < total - 1;
 
   return (
-    <div className={`meaningSheet ${suitClass}`} role="dialog" aria-label={`${card.label} meaning`}>
+    <div ref={sheetRef} className={`meaningSheet ${suitClass}`} role="dialog" aria-label={`${card.label} meaning`}>
       <div className="meaningSheetBar">
         <span className={`meaningTitle ${suitClass}`}>
           {card.revealed
@@ -213,6 +232,11 @@ export default function App() {
   const [flipLock, setFlipLock] = useState(false); 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const boardRef = useRef<BoardHandle | null>(null);
+  const sheetRef = useRef<HTMLDivElement | null>(null);
+  // The sheet grows with the length of a card's meaning, so the camera has to
+  // measure it rather than assume a height; a stale guess re-centres the card
+  // under the sheet instead of above it.
+  const [sheetHeight, setSheetHeight] = useState(210);
   const deckPressRef = useRef<HTMLDivElement | null>(null);
   
   const SHUFFLE_AFTER_RELEASE_MS = 0;
@@ -314,15 +338,26 @@ export default function App() {
   }, [ritualMode, phase]);
 
   useEffect(() => {
+    const el = sheetRef.current;
+    if (!el) return;
+
+    const observer = new ResizeObserver(([entry]) => {
+      setSheetHeight(Math.round(entry.contentRect.height));
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [openIndex]);
+
+  useEffect(() => {
     if (openIndex == null || phase !== "cardsDown") return;
     const point = slotCanvasPoint(metrics, openIndex);
     const size = cardPixelSize(metrics.cardFontPx);
     boardRef.current?.focusCanvasPoint(point.x, point.y, {
-      bottomInset: 210,
+      bottomInset: sheetHeight,
       fitWidth: size.width,
       fitHeight: size.height,
     });
-  }, [openIndex, metrics, phase]);
+  }, [openIndex, metrics, phase, sheetHeight]);
 
 
   const renderCardColumn = (card: DrawnCard, i: number) => {  
@@ -343,6 +378,8 @@ export default function App() {
                 face={card.text}
                 reversed={card.reversed}
                 disabled={disabled}
+                label={card.label}
+                name={card.name}
                 onRevealed={() => {
                   setFlipLock(true);
                   window.setTimeout(() => setFlipLock(false), 600);
@@ -363,11 +400,12 @@ export default function App() {
   const renderSpreadBoard = () => (
     <BoardViewport ref={boardRef} key={spread} boardWidth={metrics.width} boardHeight={metrics.height}>
       <div
-        className={`spreadBoard ${spread}`}
+        className={`spreadBoard ${spread}${openIndex != null ? " isFocusing" : ""}`}
         style={{
           width: `${metrics.width}px`,
           height: `${metrics.height}px`,
           ["--card-font" as string]: `${metrics.cardFontPx}px`,
+          ["--card-rows" as string]: String(CARD_ROWS),
         } as CSSProperties}
       >
         {metrics.slots.map((slot, i) => {
@@ -484,17 +522,29 @@ export default function App() {
 
       <div className={`layer${phase === "cardsDown" ? " isReading" : ""}`}>
       
-        <div className="modeToggle">
-          <button onClick={() => setRitualMode("click")} disabled={phase !== "ritual"}>
+        <div className="modeToggle" role="group" aria-label="How to begin the ritual">
+          <span className="modeToggleLabel" aria-hidden="true">Begin with</span>
+          <button
+            className={ritualMode === "click" ? "active" : ""}
+            onClick={() => setRitualMode("click")}
+            disabled={phase !== "ritual"}
+            aria-pressed={ritualMode === "click"}
+          >
             Click/Touch
           </button>
-          <button onClick={() => setRitualMode("keys")} disabled={phase !== "ritual"}>
+          <button
+            className={ritualMode === "keys" ? "active" : ""}
+            onClick={() => setRitualMode("keys")}
+            disabled={phase !== "ritual"}
+            aria-pressed={ritualMode === "keys"}
+          >
             Keyboard
           </button>
         </div>
       
         <div className="header">
-          <pre className="title-ascii">{MIRROT_TITLE}</pre>
+          <h1 className="visuallyHidden">Mirrot</h1>
+          <pre className="title-ascii" aria-hidden="true">{MIRROT_TITLE}</pre>
           <p className="subTitle">
             <i>A mirror's reflection of your soul</i>
           </p>
@@ -508,6 +558,7 @@ export default function App() {
               <button
                 className={spread === "ppf" ? "active" : ""}
                 onClick={() => setSpread("ppf")}
+                aria-pressed={spread === "ppf"}
                 disabled={!showRitual}>
                 Past, Present, Future
               </button>
@@ -515,6 +566,7 @@ export default function App() {
               <button
                 className={spread === "cc" ? "active" : ""}
                 onClick={() => setSpread("cc")}
+                aria-pressed={spread === "cc"}
                 disabled={!showRitual}>
                 Celtic Cross
               </button>
@@ -580,6 +632,7 @@ export default function App() {
           onClose={() => setOpenIndex(null)}
           onPrev={() => goToCard(openIndex - 1)}
           onNext={() => goToCard(openIndex + 1)}
+          sheetRef={sheetRef}
         />
       )}
     </>
