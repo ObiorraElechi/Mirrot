@@ -1,11 +1,17 @@
 .deck {
-  --shuffle-font: clamp(4.2px, 1.8vw, 8px);
-  --fan-x: 72px;
+  /* All three are set inline by DeckShuffle, which measures the real space. */
+  --fan-x: 80px;
   --fan-y: 48px;
+  --card-w: 300px;
+
+  /* Fallback only: DeckShuffle measures the real space and sets this inline.
+     Width is in em, not ch — ch rounds to whole pixels, which at these sizes
+     swings the card width by up to 50px. */
+  --shuffle-font: 4px;
+
   position: relative;
   font-size: var(--shuffle-font);
-  /* 100 cols × half-em advance, plus room for the fanned stack offsets */
-  width: calc(100ch + var(--fan-x));
+  width: calc(var(--card-w) + var(--fan-x));
   height: calc(83em + var(--fan-y));
   margin: 24px auto;
   overflow: visible;
@@ -19,7 +25,7 @@
   position: absolute;
   left: calc(50% - var(--fan-x) / 2);
   top: calc(50% - var(--fan-y) / 2);
-  width: 100ch;
+  width: var(--card-w);
   height: 83em;
   overflow: visible;
   background: transparent;

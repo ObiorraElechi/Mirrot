@@ -732,3 +732,69 @@ body:has(.meaningSheet) .boardHint {
     animation-duration: 1ms;
   }
 }
+
+
+/*
+ * Narrow phones: "Begin with" plus both buttons is wider than the screen, which
+ * clipped the Keyboard option and forced a horizontal scroll.
+ */
+@media (max-width: 420px) {
+  .modeToggleLabel {
+    display: none;
+  }
+
+  .modeToggle {
+    padding: 4px;
+    gap: 6px;
+  }
+
+  .modeToggle button {
+    padding: 5px 8px;
+    font-size: 12px;
+  }
+}
+
+/*
+ * Landscape phones have less height than the header wants on its own, so the
+ * deck gets squeezed below legibility. Trim the chrome instead.
+ */
+@media (max-height: 520px) {
+  .subTitle {
+    display: none;
+  }
+
+  .header {
+    padding-top: 4px;
+  }
+
+  .title-ascii {
+    font-size: clamp(2px, calc((100vw - 48px) / 220), 4px);
+  }
+
+  .spreadToggle {
+    margin-bottom: 10px;
+  }
+
+  .ritual-ui {
+    margin-top: 4px;
+  }
+
+  .layer {
+    gap: 8px;
+  }
+}
+
+/* Short desktop windows: the title ASCII sits at its 10px cap and dominates. */
+@media (min-width: 800px) and (max-height: 800px) {
+  .header {
+    padding-top: 12px;
+  }
+
+  .title-ascii {
+    font-size: clamp(3px, calc((100vw - 48px) / 150), 7px);
+  }
+
+  .spreadToggle {
+    margin-bottom: 20px;
+  }
+}
