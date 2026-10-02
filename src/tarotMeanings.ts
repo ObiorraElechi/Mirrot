@@ -16,14 +16,14 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
     },
     "/Tarot-Ascii/MajorArcana/02.txt": {
         upright: "Trust your gut.",
-        reversed: "Secrets have a cost."
+        reversed: "What is done in the dark will come to light."
     },
     "/Tarot-Ascii/MajorArcana/03.txt": {
         upright: "You reap what you sow.",
         reversed: "Too much of a good thing."
     },
     "/Tarot-Ascii/MajorArcana/04.txt": {
-        upright: "Order brings strength.",
+        upright: "A place for everything, and everything in its place.",
         reversed: "Absolute power corrupts absolutely."
     },
     "/Tarot-Ascii/MajorArcana/05.txt": {
@@ -32,15 +32,15 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
     },
     "/Tarot-Ascii/MajorArcana/06.txt": {
         upright: "Follow your heart.",
-        reversed: "Divided, we fall."
+        reversed: "United we stand, divided we fall."
     },
     "/Tarot-Ascii/MajorArcana/07.txt": {
-        upright: "Where there's drive, there's victory.",
-        reversed: "Icarus flew too close to the sun."
+        upright: "Take the reins.",
+        reversed: "Don't fly too close to the sun."
     },
     "/Tarot-Ascii/MajorArcana/08.txt": {
-        upright: "Patience is power.",
-        reversed: "Unchecked emotion betrays you."
+        upright: "You catch more flies with honey than with vinegar.",
+        reversed: "Anger is a short madness."
     },
     "/Tarot-Ascii/MajorArcana/09.txt": {
         upright: "Still waters run deep.",
@@ -51,128 +51,128 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
         reversed: "Luck runs out."
     },
     "/Tarot-Ascii/MajorArcana/11.txt": {
-        upright: "The truth will out.",
+        upright: "Justice is blind.",
         reversed: "Bias blinds judgement."
     },
     "/Tarot-Ascii/MajorArcana/12.txt": {
-        upright: "Holding on is believing that there's only a past.",
-        reversed: "Stubbornness stalls progress."
+        upright: "You can't see the forest for the trees.",
+        reversed: "Don't cut off your nose to spite your face."
     },
     "/Tarot-Ascii/MajorArcana/13.txt": {
         upright: "All things must come to an end.",
-        reversed: "Changed resisted is change delayed."
+        reversed: "You cannot step into the same river twice."
     },
     "/Tarot-Ascii/MajorArcana/14.txt": {
         upright: "Moderation in all things.",
-        reversed: "Extremes invite imbalance."
+        reversed: "The bow too tensely strung is easily broken."
     },
     "/Tarot-Ascii/MajorArcana/15.txt": {
-        upright: "You are your own jailer.",
-        reversed: "Chains break when you see them."
+        upright: "Man is born free, and everywhere he is in chains.",
+        reversed: "The truth shall set you free."
     },
     "/Tarot-Ascii/MajorArcana/16.txt": {
-        upright: "The higher they rise, the harder they fall.",
-        reversed: "Disaster postponed is not disaster avoided."
+        upright: "The bigger they are, the harder they fall.",
+        reversed: "Don't kick the can down the road."
     },
     "/Tarot-Ascii/MajorArcana/17.txt": {
         upright: "Hope springs eternal.",
-        reversed: "Doubt dims the light."
+        reversed: "Hope deferred makes the heart sick."
     },
     "/Tarot-Ascii/MajorArcana/18.txt": {
-        upright: "Not all is as it seems.",
-        reversed: "The fog begins to lift."
+        upright: "Things are not always what they seem.",
+        reversed: "The penny drops."
     },
     "/Tarot-Ascii/MajorArcana/19.txt": {
-        upright: "Bask in the light.",
-        reversed: "Even the sun casts shadows."
+        upright: "Every dog has its day.",
+        reversed: "Even the sun has spots."
     },
     "/Tarot-Ascii/MajorArcana/20.txt": {
-        upright: "Answer the call.",
-        reversed: "Denial delays reckoning."
+        upright: "Rise from the ashes.",
+        reversed: "Don't bury your head in the sand."
     },
     "/Tarot-Ascii/MajorArcana/21.txt": {
-        upright: "All comes full circle.",
-        reversed: "Unfinished business lingers."
+        upright: "The wheel has come full circle.",
+        reversed: "Tie up loose ends."
     },
     "/Tarot-Ascii/Cups/01.txt": {
-        upright: "A new feeling rises.",
-        reversed: "A guarded heart stays empty."
+        upright: "My cup runneth over.",
+        reversed: "Once bitten, twice shy."
     },
     "/Tarot-Ascii/Cups/02.txt": {
-        upright: "It takes two.",
-        reversed: "One-sided bonds break."
+        upright: "It takes two to tango.",
+        reversed: "One hand cannot clap."
     },
     "/Tarot-Ascii/Cups/03.txt": {
-        upright: "Shared joy is joy doubled.",
-        reversed: "Too many voices spoil the harmony."
+        upright: "Shared joy is double joy.",
+        reversed: "Two's company, three's a crowd."
     },
     "/Tarot-Ascii/Cups/04.txt": {
-        upright: "Apathy blinds opportunity.",
-        reversed: "Engagement restores meaning."
+        upright: "You can lead a horse to water, but you can't make it drink.",
+        reversed: "Wake up and smell the coffee."
     },
     "/Tarot-Ascii/Cups/05.txt": {
         upright: "Don't cry over spilled milk.",
-        reversed: "Perspective reveals what endures."
+        reversed: "Every cloud has a silver lining."
     },
     "/Tarot-Ascii/Cups/06.txt": {
-        upright: "The past still lingers.",
-        reversed: "Nostalgia hinders growth."
+        upright: "The child is father of the man.",
+        reversed: "You can't go home again."
     },
     "/Tarot-Ascii/Cups/07.txt": {
-        upright: "Too many choices weaken resolve.",
-        reversed: "Discernment cuts through illusion."
+        upright: "Don't build castles in the air.",
+        reversed: "Separate the wheat from the chaff."
     },
     "/Tarot-Ascii/Cups/08.txt": {
-        upright: "Fulfillment sometimes requires departure.",
-        reversed: "Avoidance masquerades as progress."
+        upright: "When one door closes, another opens.",
+        reversed: "The grass is always greener on the other side."
     },
     "/Tarot-Ascii/Cups/09.txt": {
-        upright: "Contentment is its own reward.",
-        reversed: "Indulgence feeds emptiness."
+        upright: "Count your blessings.",
+        reversed: "Enough is as good as a feast."
     },
     "/Tarot-Ascii/Cups/10.txt": {
-        upright: "Happiness shared is happiness fulfilled.",
-        reversed: "Surface peace hides fracture."
+        upright: "Home is where the heart is.",
+        reversed: "Every family has a skeleton in the closet."
     },
     "/Tarot-Ascii/Cups/11.txt": {
-        upright: "Sensitivity walks so understanding can run.",
-        reversed: "Emotional naivety welcomes confusion."
+        upright: "Wear your heart on your sleeve.",
+        reversed: "Still wet behind the ears."
     },
     "/Tarot-Ascii/Cups/12.txt": {
-        upright: "Idealism drives action",
-        reversed: "Romance obscures truth."
+        upright: "Faint heart never won fair lady.",
+        reversed: "Love is blind."
     },
     "/Tarot-Ascii/Cups/13.txt": {
-        upright: "Emotional intelligence nurtures others.",
-        reversed: "Boundless empathy overwhelms."
+        upright: "Kindness costs nothing.",
+        reversed: "You can't pour from an empty cup."
     },
     "/Tarot-Ascii/Cups/14.txt": {
-        upright: "Mastery of self brings peace.",
-        reversed: "Suppressed emotion destabilises judgement."
+        upright: "Keep a cool head.",
+        reversed: "Give sorrow words."
     },
     "/Tarot-Ascii/Pentacles/01.txt": {
-        upright: "Every fortune begins with a seed.",
-        reversed: "A poor seed yields a poor crop."
+        upright: "Mighty oaks from little acorns grow.",
+        reversed: "Opportunity seldom knocks twice."
     },
     "/Tarot-Ascii/Pentacles/02.txt": {
-        upright: "Maintaining balance is no small feat.",
-        reversed: "Too much motion conceals instability."
+        upright: "Roll with the punches.",
+        reversed: "Don't rob Peter to pay Paul."
     },
     "/Tarot-Ascii/Pentacles/03.txt": {
         upright: "Many hands make light work.",
-        reversed: "Too many cooks spoils the broth."
+        reversed: "Too many cooks spoil the broth."
     },
     "/Tarot-Ascii/Pentacles/04.txt": {
-        upright: "What you guard defines you.",
-        reversed: "Control becomes confinement."
+        upright: "A penny saved is a penny earned.",
+        reversed: "Penny wise, pound foolish."
     },
     "/Tarot-Ascii/Pentacles/05.txt": {
-        upright: "Hardship exposes what truly supports you.",
-        reversed: "Relief arrives when pride loosens."
+        upright: "A friend in need is a friend indeed.",
+        reversed: "Swallow your pride."
     },
     "/Tarot-Ascii/Pentacles/06.txt": {
-        upright: "Prosperity carries responsibility.",
-        reversed: "Unequal exchange breeds resentment."
+        upright: "It is more blessed to give than to receive.",
+        reversed: "There's no such thing as a free lunch."
     },
     "/Tarot-Ascii/Pentacles/07.txt": {
         upright: "Good things come to those who wait.",
@@ -180,34 +180,34 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
     },
     "/Tarot-Ascii/Pentacles/08.txt": {
         upright: "Practice makes perfect.",
-        reversed: "Cut corners and pay the price."
+        reversed: "If a job's worth doing, it's worth doing well."
     },
     "/Tarot-Ascii/Pentacles/09.txt": {
-        upright: "Independence is its own reward.",
-        reversed: "Comfort becomes a gilded cage."
+        upright: "Stand on your own two feet.",
+        reversed: "Beware the golden handcuffs."
     },
     "/Tarot-Ascii/Pentacles/10.txt": {
         upright: "A rising tide lifts all boats.",
         reversed: "Easy come, easy go."
     },
     "/Tarot-Ascii/Pentacles/11.txt": {
-        upright: "Commitment begins with curiosity.",
-        reversed: "Inherited stability conceals fragility."
+        upright: "Little by little, the bird builds its nest.",
+        reversed: "Never put off till tomorrow what you can do today."
     },
     "/Tarot-Ascii/Pentacles/12.txt": {
-        upright: "Consistency outpaces brilliance.",
-        reversed: "Stagnation disguises itself as discipline."
+        upright: "Slow and steady wins the race.",
+        reversed: "Don't get stuck in a rut."
     },
     "/Tarot-Ascii/Pentacles/13.txt": {
-        upright: "Stewardship creates abundance.",
-        reversed: "Over-extension drains the foundation."
+        upright: "Charity begins at home.",
+        reversed: "Don't bite off more than you can chew."
     },
     "/Tarot-Ascii/Pentacles/14.txt": {
-        upright: "Authority is built, not claimed.",
-        reversed: "Security without vision decays."
+        upright: "Rome wasn't built in a day.",
+        reversed: "The love of money is the root of all evil."
     },
     "/Tarot-Ascii/Swords/01.txt": {
-        upright: "Truth cuts both ways.",
+        upright: "The pen is mightier than the sword.",
         reversed: "None are so blind as those who will not see."
     },
     "/Tarot-Ascii/Swords/02.txt": {
@@ -220,51 +220,51 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
     },
     "/Tarot-Ascii/Swords/04.txt": {
         upright: "Discretion is the better part of valor.",
-        reversed: "All work and no rest dulls the blade."
+        reversed: "All work and no play makes Jack a dull boy."
     },
     "/Tarot-Ascii/Swords/05.txt": {
         upright: "Winning isn't everything.",
         reversed: "Pride comes before the fall."
     },
     "/Tarot-Ascii/Swords/06.txt": {
-        upright: "This too, shall pass.",
-        reversed: "You can't outrun the past."
+        upright: "This too shall pass.",
+        reversed: "Wherever you go, there you are."
     },
     "/Tarot-Ascii/Swords/07.txt": {
         upright: "Loose lips sink ships.",
         reversed: "The truth will out."
     },
     "/Tarot-Ascii/Swords/08.txt": {
-        upright: "A man is his own worst enemy.",
-        reversed: "The mind is a terrible master."
+        upright: "The mind is a terrible master.",
+        reversed: "Think outside the box."
     },
     "/Tarot-Ascii/Swords/09.txt": {
         upright: "Fear has many eyes.",
-        reversed: "Daylight brings clarity."
+        reversed: "Things will look better in the morning."
     },
     "/Tarot-Ascii/Swords/10.txt": {
-        upright: "Dead men tell no tales.",
-        reversed: "Rock bottom is still ground."
+        upright: "It's always darkest before the dawn.",
+        reversed: "The only way is up."
     },
     "/Tarot-Ascii/Swords/11.txt": {
-        upright: "Curiosity killed the cat.",
+        upright: "Knowledge is power.",
         reversed: "A little knowledge is a dangerous thing."
     },
     "/Tarot-Ascii/Swords/12.txt": {
-        upright: "Charge now, reckon later.",
-        reversed: "Momentum without aim is ruin."
+        upright: "Full steam ahead.",
+        reversed: "Like a bull in a china shop."
     },
     "/Tarot-Ascii/Swords/13.txt": {
-        upright: "Say what you mean.",
-        reversed: "A sharp tongue cuts deep."
+        upright: "Call a spade a spade.",
+        reversed: "The tongue has no bones, yet it breaks bones."
     },
     "/Tarot-Ascii/Swords/14.txt": {
-        upright: "Reason governs all things.",
+        upright: "Measure twice, cut once.",
         reversed: "Justice delayed is justice denied."
     },
     "/Tarot-Ascii/Wands/01.txt": {
         upright: "Strike while the iron is hot.",
-        reversed: "All spark and no flame."
+        reversed: "A flash in the pan."
     },
     "/Tarot-Ascii/Wands/02.txt": {
         upright: "The world is your oyster.",
@@ -275,16 +275,16 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
         reversed: "Don't count your chickens before they hatch."
     },
     "/Tarot-Ascii/Wands/04.txt": {
-        upright: "Make hay while the sun is still shining.",
-        reversed: "Wine turns to vinegar before long."
+        upright: "Eat, drink, and be merry.",
+        reversed: "The sweetest wine makes the sharpest vinegar."
     },
     "/Tarot-Ascii/Wands/05.txt": {
-        upright: "When all speak, none are heard.",
+        upright: "Iron sharpens iron.",
         reversed: "Much ado about nothing."
     },
     "/Tarot-Ascii/Wands/06.txt": {
-        upright: "Success is found with the work of many.",
-        reversed: "Applause fades."
+        upright: "To the victor go the spoils.",
+        reversed: "Thus passes the glory of the world."
     },
     "/Tarot-Ascii/Wands/07.txt": {
         upright: "Stand your ground.",
@@ -295,8 +295,8 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
         reversed: "Haste makes waste."
     },
     "/Tarot-Ascii/Wands/09.txt": {
-        upright: "fall seven times, stand up eight.",
-        reversed: "You can't pour from an empty cup."
+        upright: "Fall seven times, stand up eight.",
+        reversed: "Don't run yourself into the ground."
     },
     "/Tarot-Ascii/Wands/10.txt": {
         upright: "The candle that burns twice as bright burns half as long.",
@@ -307,15 +307,15 @@ export const MEANINGS_BY_PATH: Record<CardPath, Meaning> = {
         reversed: "All bark, no bite."
     },
     "/Tarot-Ascii/Wands/12.txt": {
-        upright: "He who hesitates misses the moment.",
-        reversed: "In order to run, first remember to walk."
+        upright: "Seize the day.",
+        reversed: "One must walk before they can run."
     },
     "/Tarot-Ascii/Wands/13.txt": {
         upright: "Well-behaved women seldom make history.",
-        reversed: "Power reveals the person."
+        reversed: "Jealousy is the green-eyed monster."
     },
     "/Tarot-Ascii/Wands/14.txt": {
-        upright: "Where there is smoke, there is fire.",
-        reversed: "Fire warms, or destroys ."
+        upright: "Actions speak louder than words.",
+        reversed: "Fire is a good servant but a bad master."
     },
 }
